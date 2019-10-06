@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+  "name": "blackbg",
+  "version": "1.0",
+  "description": "Build an Extension!",
+  "browser_action": {
+          "default_title": "Apaga la luss",     
+          "default_popup": "popup.html"       
+        },
+  "permissions": [
+          "storage"
+        ],
+  "content_scripts": [
+   {
+     "matches": [
+	 "<all_urls>"
+	 ],
+	 "js": [
+	 "jquery-3.4.1.min.js",
+	 "blackbg.js"
+	 ]
+   }
+  ]
+}
