@@ -20,7 +20,17 @@ h1
 /* Page list div */
 
 .pageList {
-	display: inline-flex;
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.pageList .pageName {
+	margin-right: 10px;
+}
+
+.pageList label {
+	margin-right: 15px;
 }
 
 /* Toggle switch (https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch) */
