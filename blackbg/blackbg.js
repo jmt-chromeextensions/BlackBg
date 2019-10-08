@@ -2,22 +2,23 @@
 
 $( document ).ready(function() {
 	
-	// $('*').css('background-color', 'black');
-	// $('*').css('color', 'white');
-
 	var page = window.location.host;
 	var selectedPages = '';
+	var selectedDomains = [];
 
 	chrome.storage.sync.get('selectedPages', function(result){
 		selectedPages = result.selectedPages;
 		
-		if (selectedPages.includes(page))
-			document.body.style.background = "black";
-		
-	});
-		
-	
-	
-	
+		selectedPages.forEach(function(selectedPage) {
+			
+			if (page.localeCompare(selectedPage.split('/blv_ck_bg/')[0]) == 0) {
+				if (selectedPage.split('/blv_ck_bg/')[1].localeCompare('enabled') == 0) {
+					document.body.style.background = "black";
+				}
+			}
+			
+		});
 
+	});
+	
 });
