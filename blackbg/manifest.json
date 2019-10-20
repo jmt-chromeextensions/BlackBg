@@ -3,8 +3,9 @@
   "name": "blackbg",
   "version": "1.0",
   "description": "Build an Extension!",
+  "options_page": "options.html",
   "browser_action": {
-          "default_title": "Apaga la luss",     
+          "default_title": "Turn off the light",     
           "default_popup": "popup.html"       
         },
   "permissions": [
@@ -18,6 +19,7 @@
 	 ],
 	 "js": [
 	 "jquery-3.4.1.min.js",
+	 "jquery-ui.min.js",
 	 "blackbg.js"
 	 ]
    }

@@ -1,17 +1,26 @@
 <html>
 
 <head>
-<script src="jquery-3.4.1.min.js"></script>
-<script src="popup.js"></script>
-<link rel="stylesheet" type="text/css" href="popup.css">
+	<script src="jquery-3.4.1.min.js"></script>
+	<script src="jquery-ui.min.js"></script>
+	<script src="popup.js"></script>
+	<link rel="stylesheet" type="text/css" href="popup.css">
+	<link rel="stylesheet" href="jquery-ui.css">
 </head>
 
 <body>
 
 <header>
     <h1>The Blacklist<h1>
-	<input id="addBtn" type="image" src="icons/add.png"/>
+	<input id="addBtn" type="image" src="icons/add.png" title="Add current page to list."/>
+	<input id="settingsBtn" type="image" src="icons/settings.png" style="float:right" title="Open settings tab."/>
 </header>
+
+
+<!-- <div id="dialog-confirm" title="Empty the recycle bin?"> -->
+  <!-- <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p> -->
+<!-- </div> -->
+  
 
 <div id="saveListSelection">
 </div>

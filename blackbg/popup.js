@@ -5,6 +5,26 @@ var pageNumber = 0;
 
 $( document ).ready(function() {
 	
+    // $( "#dialog-confirm" ).dialog({
+      // resizable: false,
+      // height: "auto",
+      // width: 400,
+      // modal: true,
+      // buttons: {
+        // "Delete all items": function() {
+          // $( this ).dialog( "close" );
+        // },
+        // Cancel: function() {
+          // $( this ).dialog( "close" );
+        // }
+      // }
+    // });
+	
+	// Settings button
+	$('#settingsBtn').click(function() {
+		openSettingsTab();
+	});
+	
 	// Add current page button
 	$('#addBtn').click(function() {
 		addNewSelectedPage();
@@ -31,6 +51,16 @@ $( document ).ready(function() {
 	});
 
 });
+
+function openSettingsTab() {
+	
+	if (chrome.runtime.openOptionsPage) {
+		chrome.runtime.openOptionsPage();
+	} else {
+		window.open(chrome.runtime.getURL('options.html'));
+  }
+  
+}
 
 function addNewSelectedPage() {
 	
