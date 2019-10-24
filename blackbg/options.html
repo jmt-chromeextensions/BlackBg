@@ -2,8 +2,8 @@
 <head>
     <title>BlackBg options</title>
     <link rel="stylesheet" type="text/css" href="options.css">
-    <script type="text/javascript" src="/js/chrome-utils.js"></script>
-    <script type="text/javascript" src="/lib/jquery-1.7.min.js"></script>
+    <script src="jquery-3.4.1.min.js"></script>
+	<script src="options.js"></script>
 </head>
 
 <body>
@@ -17,21 +17,21 @@
             <tr>
                 <th>Everywhere</th>
                 <td>
-                    <input type="checkbox" value="1"/>
+                    <input id="checkEverywhere" type="checkbox" value="1"/>
                     <label>Apply black background on all websites.</label><br>
                 </td>
             </tr>
 			<tr>
                 <th>All black</th>
                 <td>
-                    <input type="checkbox" value="1"/>
+                    <input id="checkEverything" type="checkbox" value="1"/>
                     <label>Apply black background on all elements.</label><br>
                 </td>
             </tr>
         </table>
 
 		<div class="footer">
-		  <button class="save-button">Save</button>
+		  <button id="btnSave" class="save-button">Save</button>
 		</div>
 
     </div>
