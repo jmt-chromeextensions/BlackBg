@@ -29,6 +29,12 @@ h1
 	margin-right: 10px;
 }
 
+.pageList .right {
+	order: 2;
+    margin-left: auto;
+    display: flex;
+}
+
 .pageList label {
 	margin-right: 15px;
 }
