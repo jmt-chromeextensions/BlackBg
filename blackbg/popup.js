@@ -5,21 +5,6 @@ var pageNumber = 0;
 
 $( document ).ready(function() {
 	
-    // $( "#dialog-confirm" ).dialog({
-      // resizable: false,
-      // height: "auto",
-      // width: 400,
-      // modal: true,
-      // buttons: {
-        // "Delete all items": function() {
-          // $( this ).dialog( "close" );
-        // },
-        // Cancel: function() {
-          // $( this ).dialog( "close" );
-        // }
-      // }
-    // });
-	
 	// Settings button
 	$('#settingsBtn').click(function() {
 		openSettingsTab();
@@ -40,7 +25,7 @@ $( document ).ready(function() {
 			// Display every page name with its own toggle switch
 			selectedPages.forEach(function (value) {
 				
-				addSelectedPagePopup(value.split('/blv_ck_bg/')[0], value.split('/blv_ck_bg/')[1].localeCompare('enabled') == 0);
+				addSelectedPageToPopup(value.split('/blv_ck_bg/')[0], value.split('/blv_ck_bg/')[1].localeCompare('enabled') == 0);
 				
 			});	
 			
@@ -75,14 +60,18 @@ function getCurrentDomain(tabs) {
 	var currentPage = domain + '/blv_ck_bg/enabled';
 	
 	selectedPages.push(currentPage);
-	chrome.storage.sync.set({'selectedPages': selectedPages}, function() { addSelectedPagePopup(domain, true); })
+	chrome.storage.sync.set({'selectedPages': selectedPages}, function() { addSelectedPageToPopup(domain, true); })
   
 }
 
-function addSelectedPagePopup(domain, enabled) {
+function addSelectedPageToPopup(domain, enabled) {
 	
 	var div = document.createElement("div");
 	div.className = 'pageList';
+	div.id = 'page' + pageNumber;
+	
+	var rightDiv = document.createElement("div");
+	rightDiv.className = 'right';
 	
 	var label = document.createElement("label");
 	label.className = 'switch';
@@ -110,16 +99,29 @@ function addSelectedPagePopup(domain, enabled) {
 	label.appendChild(input);
 	label.appendChild(span);
 	
+	rightDiv.appendChild(label);
+	rightDiv.appendChild(removeImg);
+	
 	div.appendChild(pageSpan);
-	div.appendChild(label);
-	div.appendChild(removeImg);
+	div.appendChild(rightDiv);
 	
 	document.getElementById("saveListSelection").appendChild(div);
+	
+	// Save enabled/disabled option for selected pages on switch interaction
+	$('#switch' + pageNumber).bind('change', { index: pageNumber }, enableDisablePage);
 	
 	// Delete selected page from list (popup and storage; asks for confirmation)
 	$('#remove' + pageNumber).bind('click', { index: pageNumber }, deleteSelectedPage);
 	
 	pageNumber++;
+  
+}
+
+function enableDisablePage(event) {
+	
+	var index = event.data.index;
+	selectedPages[index] = selectedPages[index].split('/blv_ck_bg/')[0] + '/blv_ck_bg/' + (($('#switch' + index).prop('checked') === true) ? 'enabled' : 'disabled');
+	saveSelectedPages();
   
 }
 
@@ -131,6 +133,10 @@ function deleteSelectedPage(event) {
 		chrome.storage.sync.set({'selectedPages': selectedPages}, function() { location.reload(true); })
 	}
   
+}
+
+function saveSelectedPages() {
+	chrome.storage.sync.set({'selectedPages': selectedPages}, function() { console.log(); })
 }
 
 
