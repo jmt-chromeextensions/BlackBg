@@ -4,6 +4,9 @@ $( document ).ready(function() {
 	
 	// Load settings
 	
+	// $('*').css('cssText', 'background-color: black !important');
+	// $('*').css("color", "white");
+	
 	chrome.storage.sync.get('itEverything', function(resultItEverything){
 		
 		chrome.storage.sync.get('itEverywhere', function(resultItEverywhere){
@@ -21,7 +24,6 @@ $( document ).ready(function() {
 				
 				var page = window.location.host;
 				var selectedPages = '';
-				var selectedDomains = [];
 
 				chrome.storage.sync.get('selectedPages', function(result){
 					selectedPages = result.selectedPages;

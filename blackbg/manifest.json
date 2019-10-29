@@ -1,27 +1,26 @@
 {
   "manifest_version": 2,
-  "name": "blackbg",
+  "name": "BlackBg",
   "version": "1.0",
-  "description": "Build an Extension!",
-  "options_page": "options.html",
+  "description": "Turn your favourite websites black!",
+  "options_page": "views/options.html",
   "browser_action": {
-          "default_title": "Turn off the light",     
-          "default_popup": "popup.html"       
-        },
+    "default_title": "Turn off the light.",
+    "default_popup": "views/popup.html"
+  },
   "permissions": [
-          "storage",
-		  "tabs"
-        ],
+    "storage",
+    "tabs"
+  ],
   "content_scripts": [
-   {
-     "matches": [
-	 "<all_urls>"
-	 ],
-	 "js": [
-	 "jquery-3.4.1.min.js",
-	 "jquery-ui.min.js",
-	 "blackbg.js"
-	 ]
-   }
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "scripts/jquery-3.4.1.min.js",
+        "scripts/blackbg.js"
+      ]
+    }
   ]
 }
