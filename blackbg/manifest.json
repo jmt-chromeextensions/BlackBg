@@ -8,9 +8,16 @@
     "default_title": "Turn off the light.",
     "default_popup": "views/popup.html"
   },
+  "icons": {
+    "16": "icons/extension/blackbg-16.png",
+    "32": "icons/extension/blackbg-32.png",
+    "48": "icons/extension/blackbg-48.png",
+    "128": "icons/extension/blackbg-128.png"
+  },
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "activeTab"
   ],
   "content_scripts": [
     {
