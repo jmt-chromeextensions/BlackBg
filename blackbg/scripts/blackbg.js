@@ -2,10 +2,27 @@
 
 $( document ).ready(function() {
 	
+	// Set every new added child element's background color to black
+	function setNewElementsBlack() {
+		
+		// Mutation Observer instantiation
+		var mutationObs = new MutationObserver(function(mutations, mutationObs) 
+		{ 
+			for (let i = 0, length = mutations.length; i < length; i++) {
+				if (mutations[i].addedNodes[0]) {
+					// $(mutations[i].addedNodes[0]).css('cssText', 'background-color: black !important');
+					$(mutations[i].addedNodes[0]).css("backgroundColor", "black");
+				}
+			}
+		}
+		);
+		
+		// Observe initialization
+		mutationObs.observe(document.body, { childList: true, subtree: true });
+	  
+	}
+
 	// Load settings
-	
-	// $('*').css('cssText', 'background-color: black !important');
-	// $('*').css("color", "white");
 	
 	chrome.storage.sync.get('itEverything', function(resultItEverything){
 		
@@ -14,11 +31,13 @@ $( document ).ready(function() {
 			if (resultItEverywhere.itEverywhere === true) {
 				
 				if (resultItEverything.itEverything === true) {
-					$('*').css("backgroundColor", "black");
-					$('*').css("color", "white");
+					$( "body" ).find( "*" ).css('backgroundColor', 'black');
+					$( "body" ).find( "*" ).css('color', 'white');
 				}
 				else
 					document.body.style.background = "black";
+				
+				setNewElementsBlack();
 				
 			} else {
 				
@@ -32,12 +51,15 @@ $( document ).ready(function() {
 						
 						if (page.localeCompare(selectedPage.split('/blv_ck_bg/')[0]) == 0) {
 							if (selectedPage.split('/blv_ck_bg/')[1].localeCompare('enabled') == 0) {
-								if (resultItEverything.itEverything === true)
-									$('*').css("backgroundColor", "black");
+                                if (resultItEverything.itEverything === true) {
+                                    $( "body" ).find( "*" ).css('backgroundColor', 'black');
+                                    $( "body" ).find( "*" ).css('color', 'white');
+                                }
 								else
 									document.body.style.background = "black";
+								
+								setNewElementsBlack();
 							}
-							//break;
 						}
 						
 					});
