@@ -1,8 +1,5 @@
 // Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (selectedPages).
-
-document.addEventListener('DOMContentLoaded', onDOM_Ready, false);
-
-function onDOM_Ready() {
+$(document).ready(function () {
 
 	// Set every new added child element's background color to black
 	function setNewElementsBlack() {
@@ -23,12 +20,13 @@ function onDOM_Ready() {
 
 	}
 
-	function setEverythingBlackExceptFrom_A_ElementsWithImages() {
+	function setEverythingBlackWithExceptions() {
 
 		// Black background
 		$("body").find("*").each(function () {
-			if ($(this).is("a") || $(this).parent().is("a"))
-				return;
+			if (($(this).is("a") || $(this).parent().is("a")
+				|| $(this).is("script"))) // Exclude 'a' tags or elements that contain them
+				return; // Jump to next iteration
 			$(this).css('backgroundColor', 'black');
 		});
 		// $( "body" ).find( "*" ).css('backgroundColor', 'black');
@@ -37,13 +35,13 @@ function onDOM_Ready() {
 		// White text
 		$("body").find("*").css('color', 'white');
 
-		document.body.style.setProperty("display", "initial", "important");
+		
 
 	}
 
-	function contentScript_main() {
-		// Load settings
+	function blackBg_main() {
 
+		// Load settings
 		chrome.storage.sync.get('itEverything', function (resultItEverything) {
 
 			chrome.storage.sync.get('itEverywhere', function (resultItEverywhere) {
@@ -51,7 +49,7 @@ function onDOM_Ready() {
 				if (resultItEverywhere.itEverywhere === true) {
 
 					if (resultItEverything.itEverything === true) {
-						setEverythingBlackExceptFrom_A_ElementsWithImages();
+						setInterval(setEverythingBlackWithExceptions, 500);
 					}
 					else
 						document.body.style.background = "black";
@@ -71,7 +69,7 @@ function onDOM_Ready() {
 							if (page.localeCompare(selectedPage.split('/blv_ck_bg/')[0]) == 0) {
 								if (selectedPage.split('/blv_ck_bg/')[1].localeCompare('enabled') == 0) {
 									if (resultItEverything.itEverything === true) {
-										setEverythingBlackExceptFrom_A_ElementsWithImages();
+										setInterval(setEverythingBlackWithExceptions, 500);
 									}
 									else
 										document.body.style.background = "black";
@@ -92,24 +90,10 @@ function onDOM_Ready() {
 
 	}
 
-	// if(window.location.host !== "www.youtube.com")
-	contentScript_main();
-	document.body.style.setProperty("display", "initial", "important");
+	blackBg_main();
 
-	debugger;
+});
 
-
-	
-	// setTimeout(() => {
-		
-	// }, 20);
-	
-	// $( "body" ).append('<div class="blackbgdiv" style="width: 100%; height: 100%; background-color:black"')
-
-
-
-
-}
 
 
 

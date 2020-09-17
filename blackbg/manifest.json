@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "BlackBg",
-  "version": "1.0.0.1",
+  "name": "Blackground",
+  "version": "1.0.0.2",
   "description": "Turn your favourite websites black!",
   "options_page": "views/options.html",
   "browser_action": {
@@ -18,10 +18,7 @@
   
   "permissions": [
     "storage",
-    "tabs",
-    "activeTab",
-	"http://*/",
-    "https://*/"
+    "tabs"
   ],
   
   "content_scripts": [
@@ -29,21 +26,10 @@
       "matches": [
         "<all_urls>"
       ],
-      "exclude_matches": [
-        "https://www.youtube.com/"
-    ],
-	  "run_at": "document_start",
       "js": [
         "scripts/jquery-3.4.1.min.js",
         "scripts/blackbg.js"  
-      ],
-      "css": [
-        "styles/black.css"
       ]
     }
-  ],
-    
-  "web_accessible_resources": [
-	"styles/black.css"
-	]
+  ]
 }
