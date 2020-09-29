@@ -1,36 +1,29 @@
 // Manage interaction with the popup and the selected pages list.
+const SAVED_PAGE_ELEM_TEMPLATE = `<div class="saved_page" id="pageXXX"><span class="page_name">URL</span><div class="right"><label class="switch" id="lblXXX"><input type="checkbox" id="switch_XXX" data-domain="URL"><span class="slider round"></span></label><input type="image" src="../icons/delete.png" id="removeXXX"></div></div>`
 
-var selectedPages = '';
+var selected_pages = [];
 var pageNumber = 0;
 
 $(document).ready(function () {
 
     // Settings button
-    $('#settingsBtn').click(function () {
-        openSettingsTab();
-    });
+    $('#btn_settings').click(openSettingsTab);
 
     // Add current page button
-    $('#addBtn').click(function () {
-        addNewSelectedPage();
-    });
+    $('#btn_add').click(addNewSelectedPage);
 
     // Show the pages that are currently selected
     chrome.storage.sync.get('selectedPages', function (result) {
 
         if (result.selectedPages) {
 
-            selectedPages = result.selectedPages;
+            selected_pages = result.selectedPages;
 
             // Display every page name with its own toggle switch
-            selectedPages.forEach(function (value) {
-
-                addSelectedPageToPopup(value.split('/blv_ck_bg/')[0], value.split('/blv_ck_bg/')[1].localeCompare('enabled') == 0);
-
+            selected_pages.forEach(function (value) {
+                addSelectedPageToPopup(value.split('/blv_ck_bg/')[0], value.split('/blv_ck_bg/')[1] === "enabled");
             });
 
-        } else {
-            selectedPages = [];
         }
 
     });
@@ -48,80 +41,50 @@ function openSettingsTab() {
 }
 
 function addNewSelectedPage() {
+    // Get current tab domain, register it with chrome.storage and send message to all tabs to notify the addition
+    chrome.tabs.query({ active: true, currentWindow: true, 'windowId': chrome.windows.WINDOW_ID_CURRENT }, function (tabs) {
+        let domain = new URL(tabs[0].url).hostname;
+        let currentPage = domain + '/blv_ck_bg/enabled';
 
-    var currentTabQuery = { active: true, currentWindow: true, 'windowId': chrome.windows.WINDOW_ID_CURRENT };
-    chrome.tabs.query(currentTabQuery, getCurrentDomain);
+        selected_pages.push(currentPage);
+        chrome.storage.sync.set({ 'selectedPages': selected_pages }, function () { 
+            addSelectedPageToPopup(domain, true); 
+        })
 
-}
-
-function getCurrentDomain(tabs) {
-
-    var domain = new URL(tabs[0].url).hostname;
-    var currentPage = domain + '/blv_ck_bg/enabled';
-
-    selectedPages.push(currentPage);
-    chrome.storage.sync.set({ 'selectedPages': selectedPages }, function () { addSelectedPageToPopup(domain, true); })
-
+        sendMessageToContentScripts(domain, "activateBlackBgMode");
+    });
 }
 
 function addSelectedPageToPopup(domain, enabled) {
 
-    var div = document.createElement("div");
-    div.className = 'pageList';
-    div.id = 'page' + pageNumber;
+    let new_saved_page_elem_html = SAVED_PAGE_ELEM_TEMPLATE.replaceAll("XXX", pageNumber).replaceAll("URL", domain);
+    $("#saved_pages").append(new_saved_page_elem_html);
 
-    var rightDiv = document.createElement("div");
-    rightDiv.className = 'right';
-
-    var label = document.createElement("label");
-    label.className = 'switch';
-    label.id = 'lbl' + pageNumber;
-
-    var input = document.createElement("input");
-    input.type = 'checkbox';
-    input.id = 'switch' + pageNumber;
     if (enabled)
-        input.checked = true;
-
-    var span = document.createElement("span");
-    span.className = 'slider round';
-
-    var pageSpan = document.createElement("span");
-    pageSpan.className = 'pageName';
-    pageSpan.innerHTML = domain;
-
-    var removeImg = document.createElement("input");
-    removeImg.type = 'image';
-    removeImg.src = "../icons/delete.png"
-    removeImg.id = 'remove' + pageNumber;
-    //removeImg.onclick = deleteSelectedPage();
-
-    label.appendChild(input);
-    label.appendChild(span);
-
-    rightDiv.appendChild(label);
-    rightDiv.appendChild(removeImg);
-
-    div.appendChild(pageSpan);
-    div.appendChild(rightDiv);
-
-    document.getElementById("saveListSelection").appendChild(div);
+        $(`#switch_${pageNumber}`)[0].checked = true;
 
     // Save enabled/disabled option for selected pages on switch interaction
-    $('#switch' + pageNumber).bind('change', { index: pageNumber }, enableDisablePage);
+    $(`#switch_${pageNumber}`).bind('change', (delayFunction(enableDisablePage, 750)));
 
     // Delete selected page from list (popup and storage; asks for confirmation)
+    // $('#remove' + pageNumber).click(deleteConfirmOptions);
+
     $('#remove' + pageNumber).bind('click', { index: pageNumber, enabled: enabled }, deleteConfirmOptions);
 
     pageNumber++;
 
 }
 
-function enableDisablePage(event) {
+function enableDisablePage() {
 
-    var index = event.data.index;
-    selectedPages[index] = selectedPages[index].split('/blv_ck_bg/')[0] + '/blv_ck_bg/' + (($('#switch' + index).prop('checked') === true) ? 'enabled' : 'disabled');
+    let index = this.id.split('_')[1];
+    let enabled = this.checked;
+    let domain = $(this).data("domain");
+
+    selected_pages[index] = selected_pages[index].split('/blv_ck_bg/')[0] + '/blv_ck_bg/' + ((enabled) ? 'enabled' : 'disabled');
+
     saveSelectedPages();
+    sendMessageToContentScripts(domain, enabled ? "activateBlackBgMode" : "deactivateBlackBgMode");
 
 }
 
@@ -143,8 +106,8 @@ function deleteConfirmOptions(event) {
 }
 
 function deleteSelectedPage(event) {
-    selectedPages.splice(event.data.index, 1);
-    chrome.storage.sync.set({ 'selectedPages': selectedPages }, function () { location.reload(true); })
+    selected_pages.splice(event.data.index, 1);
+    chrome.storage.sync.set({ 'selectedPages': selected_pages }, function () { location.reload(true); })
 }
 
 function restoreSelectedPageDiv(event) {
@@ -159,9 +122,17 @@ function restoreSelectedPageDiv(event) {
 }
 
 function saveSelectedPages() {
-    chrome.storage.sync.set({ 'selectedPages': selectedPages }, function () { console.log(); })
+    chrome.storage.sync.set({ 'selectedPages': selected_pages }, function () { console.log(); })
 }
 
+function sendMessageToContentScripts(domain, action) {
+    debugger;
+    chrome.tabs.query({}, function (tabs) {
+        for (var i = 0, length = tabs.length; i < length; i++) {
+            chrome.tabs.sendMessage(tabs[i].id, { domain: domain, action: action  }, function () { });
+        }
+    });
+}
 
 
 

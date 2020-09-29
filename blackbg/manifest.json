@@ -24,7 +24,11 @@
       ],
       "js": [
         "jquery/jquery-3.4.1.min.js",
+        "content_scripts/utils/utils.js",
         "content_scripts/set_bg_color.js"
+      ],
+      "css": [
+        "styles/blackground.css"
       ]
     }
   ],

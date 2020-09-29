@@ -19,23 +19,23 @@ h1
 
 /* Page list div */
 
-.pageList {
+.saved_page {
 	display: flex;
 	align-items: center;
 	margin-bottom: 10px;
 }
 
-.pageList .pageName {
+.saved_page .page_name {
 	margin-right: 10px;
 }
 
-.pageList .right {
+.saved_page .right {
 	order: 2;
     margin-left: auto;
     display: flex;
 }
 
-.pageList label {
+.saved_page label {
 	margin-right: 15px;
 }
 
