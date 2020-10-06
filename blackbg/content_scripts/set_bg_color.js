@@ -137,9 +137,9 @@ function initBlackMode() {
 		setCssProp_storePropInDataAttributeIfExistant(this, "color", "white", true);
 	});
 
-	setEverythingBlackExceptElementsWithTransparentBackground();
-	setBgColorInterval = setInterval(setEverythingBlackExceptElementsWithTransparentBackground, 10);
-	mutationObs.observe(document.body, { childList: true, attributes: true, subtree: true });
+	// setEverythingBlackExceptElementsWithTransparentBackground();
+	// setBgColorInterval = setInterval(setEverythingBlackExceptElementsWithTransparentBackground, 10);
+	// mutationObs.observe(document.body, { childList: true, attributes: true, subtree: true });
 }
 
 function revertBlackMode () {
