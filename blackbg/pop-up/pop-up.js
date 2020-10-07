@@ -64,7 +64,7 @@ function addSelectedPageToPopup(domain, enabled) {
         $(`#switch_${pageNumber}`)[0].checked = true;
 
     // Save enabled/disabled option for selected pages on switch interaction
-    $(`#switch_${pageNumber}`).bind('change', (delayFunction(enableDisablePage, 750)));
+    $(`#switch_${pageNumber}`).bind('change', (delayFunction(enableDisablePage, 1)));
 
     // Delete selected page from list (popup and storage; asks for confirmation)
     // $('#remove' + pageNumber).click(deleteConfirmOptions);

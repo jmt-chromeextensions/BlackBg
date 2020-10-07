@@ -1,3 +1,7 @@
+const HTML_ELEMENTS_EXCEPTIONS = "script, noscript, style, link, img, video";
+const HTML_VIP_ELEMENTS = 
+".chat-author__display-name";
+
 // Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (selectedPages).
 var setBgColorInterval;
 var mutationObs = new MutationObserver(function(mutations) {
@@ -50,7 +54,7 @@ function activateBlackModeIfPageSelectedOrItEverywhere() {
 
 function setEverythingBlackExceptElementsWithTransparentBackground() {
 
-	$("body").find("*").not(".blackbg_pass, .blackbg_lets_go, script, noscript, style, link, img, video").each(function () {
+	$("body").find("*").not(`.blackbg_pass, .blackbg_lets_go, ${HTML_ELEMENTS_EXCEPTIONS}, ${HTML_VIP_ELEMENTS}`).each(function () {
 
 		if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba(0, 0, 0, 0") && 
 			!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgb(0, 0, 0")) {
@@ -77,7 +81,8 @@ function setNewElementsBlack(mutations) {
 			if (mutations[i].addedNodes[j]) {
 
 				if (!$(mutations[i].addedNodes[j]).hasClass("blackbg_lets_go"))
-					if (!window.getComputedStyle(mutations[i].addedNodes[j]).getPropertyValue("background-color").startsWith("rgba(0, 0, 0, 0")) 
+					if (typeof (mutations[i].addedNodes[j]) === "object" && 
+						!window.getComputedStyle(mutations[i].addedNodes[j]).getPropertyValue("background-color").startsWith("rgba(0, 0, 0, 0")) 
 					{
 						setCssProp_storePropInDataAttributeIfExistant(mutations[i].addedNodes[j], "background-color", "black", true);
 						$(mutations[i].addedNodes[j]).addClass("blackbg_lets_go");
@@ -135,10 +140,22 @@ function initBlackMode() {
 	$("html, body").each(function () {
 		setCssProp_storePropInDataAttributeIfExistant(this, "background-color", "black", true);
 		setCssProp_storePropInDataAttributeIfExistant(this, "color", "white", true);
+		// setCssProp_storePropInDataAttributeIfExistant(this, "background", "none", true);
+		// setCssProp_storePropInDataAttributeIfExistant(this, "background-image", "none", true);
+		if (!$(this).css("background").startsWith("rgb(0, 0, 0") && !$(this).css("background").startsWith("rgba(0, 0, 0")) {
+			$(this).css("background", "none");
+		}
+
+		if (!$(this).css("background-image").startsWith("rgb(0, 0, 0") && !$(this).css("background-image").startsWith("rgba(0, 0, 0")) {
+			$(this).css("background-image", "none");
+		}
+
+		// $(this).css("background", `${$(this).css("background")}pepe`);
+		// $(this).css("background-image", `${$(this).css("background-image")}pepe`);
 	});
 
-	// setEverythingBlackExceptElementsWithTransparentBackground();
-	// setBgColorInterval = setInterval(setEverythingBlackExceptElementsWithTransparentBackground, 10);
+	setEverythingBlackExceptElementsWithTransparentBackground();
+	setBgColorInterval = setInterval(setEverythingBlackExceptElementsWithTransparentBackground, 10);
 	// mutationObs.observe(document.body, { childList: true, attributes: true, subtree: true });
 }
 
@@ -150,6 +167,10 @@ function revertBlackMode () {
 	$("html, body").each(function () {
 		removePropertyOrSetIfStored(this, "background-color");
 		removePropertyOrSetIfStored(this, "color");
+		removePropertyOrSetIfStored(this, "background");
+		removePropertyOrSetIfStored(this, "background-image");
+		// $(this).css("background", $(this).css("background").replace("pepe", ""));
+		// $(this).css("background-image", $(this).css("background-image").replace("pepe", ""));
 	});
 
 	$(".blackbg_lets_go").each(function () {
