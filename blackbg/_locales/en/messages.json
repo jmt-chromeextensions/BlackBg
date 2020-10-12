@@ -1,0 +1,13 @@
+{
+    "lbl_blacklist": {
+        "message": "The Blacklist"
+    },
+
+    "title_add_button": {
+        "message": "Add current page to list."
+    },
+
+    "title_settings_button": {
+        "message": "Open settings tab."
+    }
+}

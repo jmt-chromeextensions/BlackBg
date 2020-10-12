@@ -1,0 +1,13 @@
+{
+    "lbl_blacklist": {
+        "message": "La Lista Negra"
+    },
+
+    "title_add_button": {
+        "message": "Añadir página actual a la lista."
+    },
+
+    "title_settings_button": {
+        "message": "Abrir pestaña de configuración."
+    }
+}

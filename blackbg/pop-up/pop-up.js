@@ -6,6 +6,8 @@ var pageNumber = 0;
 
 $(document).ready(function () {
 
+    localizeAllTexts();
+
     // Settings button
     $('#btn_settings').click(openSettingsTab);
 

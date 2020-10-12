@@ -3,6 +3,7 @@
   "name": "Blackground",
   "version": "1.0.0.2",
 
+  "default_locale": "en",
   "description": "Turn your favourite websites black!",
   "icons": {
     "16": "extension_icons/blackbg-16.png",
