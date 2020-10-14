@@ -10,9 +10,13 @@
 <body>
 
 <header>
-    <h1>The Blacklist<h1>
-	<input id="btn_add" type="image" src="../icons/add.png" title="Add current page to list."/>
-	<input id="btn_settings" type="image" src="../icons/settings.png" style="float:right" title="Open settings tab."/>
+    <h1 data-localize="text">__MSG_lbl_blacklist<h1>
+	<hr>
+	
+	<input id="btn_add" type="image" src="../icons/add.png" data-localize="title" title="__MSG_title_add_button"/>
+
+	<input id="btn_all" type="checkbox"/>
+	<label for="btn_all" class="opacity_25" data-localize="title" title="__MSG_title_all_button"><img src="../icons/all.png" /></label>	
 </header>
 
 <div id="saved_pages">

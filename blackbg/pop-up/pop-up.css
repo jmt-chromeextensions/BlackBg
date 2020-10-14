@@ -6,12 +6,33 @@
 	background-color: black;
 }
 
-h1
-{
-	font-family:"Garamond";
+html {
+  /* height: fit-content; */
+}
+
+body {
+  min-width: 250px;
 }
 
 /* Popup elements */
+
+header input[type="checkbox"] {
+  display: none;
+}
+
+header label {
+  cursor: pointer;
+}
+
+h1
+{
+  text-align: center;
+	font-family:"Garamond";
+}
+
+.opacity_25 {
+  opacity: 25%;
+}
 
 .saveBtn {
 	margin-top: 15px;
@@ -26,7 +47,8 @@ h1
 }
 
 .saved_page .page_name {
-	margin-right: 10px;
+  margin-right: 10px;
+  font-size: 14;
 }
 
 .saved_page .right {
@@ -37,6 +59,10 @@ h1
 
 .saved_page label {
 	margin-right: 15px;
+}
+
+.pointer_events_none {
+  pointer-events: none;
 }
 
 /* Toggle switch (https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch) */
@@ -61,7 +87,7 @@ h1
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: #bbb;
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -73,17 +99,17 @@ h1
   width: 26px;
   left: 4px;
   bottom: 4px;
-  background-color: white;
+  background-color: black;
   -webkit-transition: .4s;
   transition: .4s;
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: white;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 1px white;
 }
 
 input:checked + .slider:before {

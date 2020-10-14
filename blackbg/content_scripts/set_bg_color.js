@@ -1,6 +1,9 @@
 const HTML_ELEMENTS_EXCEPTIONS = "script, noscript, style, link, img, video";
 const HTML_VIP_ELEMENTS = 
-".chat-author__display-name";
+".chat-author__display-name"; // Twitch chat usernames
+
+var pageEnabled = false;
+var itEverywhere = false;
 
 // Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (selectedPages).
 var setBgColorInterval;
@@ -15,40 +18,62 @@ $(document).ready(function () {
 // Inbox 📫
 chrome.extension.onMessage.addListener(function (msg) {
 
+	// Apply on all pages
+	if (msg.action === "applyOnAllPages") {
+		itEverywhere = true;
+		if (!pageEnabled)
+			initBlackMode();
+		return;
+	}
+
+	if (msg.action === "notApplyOnAllPages") {
+		itEverywhere = false;
+		if (!pageEnabled)
+			revertBlackMode();
+		return;
+	}
+
 	if (window.location.hostname !== msg.domain)
 		return;
 
-	if (msg.action === "activateBlackBgMode")
-		initBlackMode();
+	if (msg.action === "activateBlackBgMode") {
+		pageEnabled = true;
+		if (!itEverywhere)
+			initBlackMode();
+	}
 
-	else if (msg.action == 'deactivateBlackBgMode')
-		revertBlackMode();
+	else if (msg.action == 'deactivateBlackBgMode') {
+		pageEnabled = false;
+	 	if (!itEverywhere)
+			revertBlackMode();
+	}
 
 });
 
 function activateBlackModeIfPageSelectedOrItEverywhere() {
 
 	// Load settings
-	chrome.storage.sync.get('itEverywhere', function (resultItEverywhere) {
+	chrome.storage.sync.get(['itEverywhere', 'selectedPages'], function (result) {
 
-		if (resultItEverywhere.itEverywhere === true) {
-			initBlackMode();
-		} else {
+		if (result.itEverywhere === true)
+			itEverywhere = true;
 
-			let current_page = window.location.host;
-			let selectedPages = '';
+		let current_page = window.location.host;
+		let selectedPages = '';
 
-			chrome.storage.sync.get('selectedPages', function (result) {
-				selectedPages = result.selectedPages;
-				selectedPages.forEach(function (selectedPage) {
+		selectedPages = result.selectedPages;
 
-					if (current_page === selectedPage.split('/blv_ck_bg/')[0]) 
-						if (selectedPage.split('/blv_ck_bg/')[1] === "enabled") 
-							initBlackMode();
-						
-				});
+		if (selectedPages)
+			selectedPages.forEach(function (selectedPage) {
+
+				if (current_page === selectedPage.split('/blv_ck_bg/')[0])
+					if (selectedPage.split('/blv_ck_bg/')[1] === "enabled") {
+						pageEnabled = true;
+					}
 			});
-		}
+
+		if (pageEnabled || itEverywhere)
+			initBlackMode();
 	});
 }
 
@@ -66,7 +91,11 @@ function setEverythingBlackExceptElementsWithTransparentBackground() {
 		
 		// All texts' color need to be white
 		if (!window.getComputedStyle(this).getPropertyValue("color").startsWith("rgb(255, 255, 255"))
-			setCssProp_storePropInDataAttributeIfExistant(this, "color", "white", true);
+			if (!$(this).is("a")) 
+				setCssProp_storePropInDataAttributeIfExistant(this, "color", "white", true); // Light blue for links
+			else
+				$(this).addClass("blackbg_link")
+
 		
 		// Add class this class to mark elements that have been already processed by this function
 		$(this).addClass("blackbg_pass");
@@ -178,6 +207,8 @@ function revertBlackMode () {
 		removePropertyOrSetIfStored(this, "color");
 		$(this).removeClass("blackbg_lets_go");
 	});
+
+	$(".blackbg_link").removeClass("blackbg_link");
 
 	$(".blackbg_pass").each(function () {
 		removePropertyOrSetIfStored(this, "color");

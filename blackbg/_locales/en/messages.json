@@ -6,8 +6,14 @@
     "title_add_button": {
         "message": "Add current page to list."
     },
-
     "title_settings_button": {
         "message": "Open settings tab."
+    },
+    "title_all_button": {
+        "message": "Apply on all pages."
+    },
+
+    "msg_confimation": {
+        "message": "Are you sure?"
     }
 }

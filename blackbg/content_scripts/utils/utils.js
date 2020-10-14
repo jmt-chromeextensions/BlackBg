@@ -12,7 +12,7 @@ function localizeAllTexts() {
 }
 
 function getLocalizedText(textWithKey) {
-    let key = textWithKey.substring(6); //__MSG_
+    let key = textWithKey.indexOf("__MSG_") != -1 ? textWithKey.substring(6) : textWithKey; //__MSG_
     return chrome.i18n.getMessage(key);
 }
  
