@@ -92,13 +92,17 @@ function setEverythingBlackExceptElementsWithTransparentBackground() {
 		// All texts' color need to be white
 		if (!window.getComputedStyle(this).getPropertyValue("color").startsWith("rgb(255, 255, 255"))
 			if (!$(this).is("a")) 
-				setCssProp_storePropInDataAttributeIfExistant(this, "color", "white", true); // Light blue for links
-			else
-				$(this).addClass("blackbg_link")
-
+				setCssProp_storePropInDataAttributeIfExistant(this, "color", "white", true);
+			 
 		
 		// Add class this class to mark elements that have been already processed by this function
 		$(this).addClass("blackbg_pass");
+	});
+
+	$("a").each(function () {
+		if (window.getComputedStyle(this).getPropertyValue("color").startsWith("rgb(0, 0, 0") || 
+		window.getComputedStyle(this).getPropertyValue("color").startsWith("rgb(26, 13, 171") || window.getComputedStyle(this).getPropertyValue("color").startsWith("rgb(26, 115, 232"))
+			$(this).addClass("blackbg_link");
 	});
 
 }
