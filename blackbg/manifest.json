@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Blackground",
-  "version": "2.0.0.1",
+  "version": "2.0.0.2",
 
   "default_locale": "en",
   "description": "Turn your favourite websites black!",
@@ -17,7 +17,11 @@
     "default_title": "Turn off the light.",
     "default_popup": "pop-up/pop-up.html"
   },  
-    
+  
+  "background": {
+    "scripts": ["background_scripts/initialize_extension.js"],
+    "persistent": false
+  },
   "content_scripts": [
     {
       "matches": [
@@ -35,6 +39,7 @@
   ],
 
   "permissions": [
+    "*://*/*",
     "storage",
     "tabs"
   ]
