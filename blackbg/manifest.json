@@ -1,8 +1,9 @@
 {
   "manifest_version": 2,
   "name": "Blackground",
-  "version": "1.0.0.2",
+  "version": "2.0.0.2",
 
+  "default_locale": "en",
   "description": "Turn your favourite websites black!",
   "icons": {
     "16": "extension_icons/blackbg-16.png",
@@ -16,7 +17,11 @@
     "default_title": "Turn off the light.",
     "default_popup": "pop-up/pop-up.html"
   },  
-    
+  
+  "background": {
+    "scripts": ["background_scripts/initialize_extension.js"],
+    "persistent": false
+  },
   "content_scripts": [
     {
       "matches": [
@@ -24,12 +29,17 @@
       ],
       "js": [
         "jquery/jquery-3.4.1.min.js",
+        "content_scripts/utils/utils.js",
         "content_scripts/set_bg_color.js"
+      ],
+      "css": [
+        "styles/blackground.css"
       ]
     }
   ],
 
   "permissions": [
+    "*://*/*",
     "storage",
     "tabs"
   ]
