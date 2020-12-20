@@ -5,6 +5,11 @@
 	<script src="../jquery/jquery-3.4.1.min.js"></script>
 	<script src="../content_scripts/utils/utils.js"></script>
 	<script src="pop-up.js"></script>
+	<script src="colors.js"></script>
+
+	<script src="../tools/spectrum.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../tools/spectrum.min.css">
+
 </head>
 
 <body>
@@ -23,7 +28,54 @@
 <!-- List of saved selected pages -->
 </div>
 
+<!-- Pop-up containing color selector -->
+<div id="color_selector" class="modal" style="display: none;">
+
+	<div class="popup_title">
+		<!-- Site info -->
+		<h2></h2>
+		<h3></h3>
+	</div>
+
+	<input id="showInput" type="text" name="showInput" class="input_color_selector">
+	
+	<!-- Buttons -->
+	<div class="box_buttons random_div" title="Random color everytime the page loads">
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="32.000000pt" height="32.000000pt"
+			viewBox="0 0 32.000000 32.000000" preserveAspectRatio="xMidYMid meet" style="height:32px; width:32px">
+			<g transform="translate(0.000000,32.000000) scale(0.100000,-0.100000)" fill="white" stroke="none">
+				<path d="M0 160 l0 -160 160 0 160 0 0 160 0 160 -160 0 -160 0 0 -160z m310 0 l0 -150 -150 0 -150 0 0 150 0 150 150 0 150 0 0 -150z" />
+				<path d="M109 214 c-10 -13 -10 -17 2 -25 21 -13 32 -11 25 6 -3 9 0 15 9 15 24 0 27 -19 9 -50 -23 -37 -11 -51 15 -19 28 33 35 57 21 74 -16 20 -64 19 -81 -1z" />
+				<path d="M130 100 c0 -5 9 -10 20 -10 11 0 20 5 20 10 0 6 -9 10 -20 10 -11 0 -20 -4 -20 -10z" />
+			</g>
+		</svg>
+	</div>
+
+	<div title="Continuous color cycle" class="box_buttons cycle_div">
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="32.000000pt" height="32.000000pt" viewBox="0 0 240.000000 240.000000" preserveAspectRatio="xMidYMid meet" style="height:32px; width:32px">
+			<g transform="translate(0.000000,240.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+				<path d="M0 1200 l0 -1200 1200 0 1200 0 0 1200 0 1200 -1200 0 -1200 0 0 -1200z m2370 5 l0 -1165 -1170 0 -1170 0 0 1165 0 1165 1170 0 1170 0 0 -1165z" fill="white"/>
+				<path d="M1082 1909 c-137 -23 -270 -90 -377 -191 l-64 -60 -53 29 c-59 33 -86 33 -92 0 -3 -12 -8 -102 -11 -200 -7 -182 -3 -207 32 -207 7 0 90 41 184 91 158 85 170 94 167 118 -2 17 -17 35 -47 55 l-45 30 49 43 c315 277 802 130 919 -278 8 -30 24 -63 34 -72 25 -23 74 -21 103 2 31 25 30 72 -4 169 -114 326 -454 528 -795 471z"/>
+				<path d="M519 1131 c-31 -25 -30 -72 4 -169 37 -108 82 -177 172 -267 90 -90 159 -135 264 -171 260 -90 534 -32 736 158 l65 60 44 -26 c52 -30 82 -33 94 -8 13 23 21 376 10 396 -5 9 -17 16 -27 16 -25 0 -333 -165 -348 -187 -19 -26 -17 -30 39 -70 l51 -37 -48 -43 c-315 -277 -803 -129 -919 278 -8 30 -24 63 -34 72 -25 23 -74 21 -103 -2z"/>
+			</g>
+		</svg>
+	</div>
+
+	<div title="Adjust color cycle speed"  class="box_buttons cycle_speed_div">
+		<input id="cycle_speed" class="range vertical-lowest-first round" type="range" min="1" max="100" step="1" value=10 style="visibility: hidden;"/>
+	</div>
+
+	<div class="box_buttons acccan_div">
+		<input id="acceptBtn" type="image" src="../icons/accept.png" title="Save changes" style="margin-right:15px">
+		<input id="cancelBtn" type="image" src="../icons/cancel.png" title="Discard changes">
+	</div>
+
+</div>
+
+</div>
+
 <div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> 
+<div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a></div>
 </body>
 
 </html>

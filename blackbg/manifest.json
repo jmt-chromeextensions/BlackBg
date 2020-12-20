@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Blackground",
-  "version": "2.0.0.2",
+  "name": "Custom Background Color",
+  "short_name": "CustomBgColor",
+  "version": "2.1.0.2",
 
   "default_locale": "en",
   "description": "Turn your favourite websites black!",

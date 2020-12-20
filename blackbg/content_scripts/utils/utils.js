@@ -28,3 +28,7 @@ function delayFunction (callback, ms) {
     };
 }
 
+function getRandomHexColor () {
+    return "#"+((1<<24)*Math.random()|0).toString(16);
+}
+

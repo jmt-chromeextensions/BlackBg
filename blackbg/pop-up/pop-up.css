@@ -1,17 +1,29 @@
 /* General */
 
-* 
+*:not(.modal)
 {
-	color: white;
-	background-color: black;
+	
 }
 
 html {
-  /* height: fit-content; */
+  height: fit-content;
 }
 
 body {
+  height: fit-content;
   min-width: 250px;
+  min-width: max-content;
+  color: white;
+	background-color: black;
+}
+
+body > * {
+  color: white;
+	background-color: black;
+}
+
+a {
+  color:white;
 }
 
 /* Popup elements */
@@ -36,6 +48,174 @@ h1
 
 .saveBtn {
 	margin-top: 15px;
+}
+
+.modal {
+  position: fixed;
+  z-index: 1;
+  top: 19%;
+  right: 5%;
+  width: 302.39px;;
+  height: 74%;
+  /* overflow: auto; */
+  background-color: rgb(142, 142, 142);
+  border-radius: 15px;
+  /* text-align: center; */
+}
+
+/* Spectrum */
+
+.sp-container {
+  position: fixed !important;
+}
+
+/* Spectrum */
+
+.modal h2 {
+  margin-block-end: 0;
+}
+
+.modal h3 {
+  margin-block-start: 0.2em;
+}
+
+.popup_title {
+  margin: 0 0 10px 10px;
+}
+
+.popup_title h2 {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.input_color_selector {
+  opacity: 0;
+  /* padding-top: 35px; */
+  margin: 0 0 0 10px;
+}
+
+.box_buttons > * {
+  cursor: pointer;
+}
+
+/* Good CSS practices */
+
+.random_div {
+  margin: 25px 0 0 250px;
+}
+
+.cycle_div {
+  margin: 18px 0 0 250px;
+}
+
+.cycle_speed_div {
+  margin: 55px 0 0 215px;
+}
+
+.acccan_div {
+  margin: 110px 0 0 125px;
+}
+
+/* @keyframes rotate {
+  from {
+    -webkit-transform: rotate(0deg);
+    -moz-transform-origin: 25px 25px;
+    -ms-transform-origin:  25px 25px;
+    -o-transform-origin: 25px 25px;
+    -webkit-transform-origin:  25px 25px;
+    transform-origin: 25px 25px;
+  }
+  to { 
+    -webkit-transform: rotate(360deg);
+    -webkit-transform-origin: 1px 1px;
+  }
+}
+
+.cycle_div path:nth-child(2) {
+  -webkit-animation-name:             rotate; 
+  animation-name:                     rotate; 
+  -webkit-animation-duration:         1s; 
+  animation-duration:                 1s; 
+  -webkit-animation-iteration-count:  infinite;
+  animation-iteration-count:          infinite;
+  -webkit-animation-timing-function:  linear;
+  animation-timing-function:          linear;
+} */
+/* 
+input[type=range][orient=vertical]
+{
+  color: white;
+  background-color: white;
+  -webkit-appearance: none; 
+  width: 8px;
+  height: 90px;
+  margin: 10px;
+}  */
+
+/*customised range*/ input[type="range"].range
+{
+  cursor: pointer;
+  width: 100px !important;
+  -webkit-appearance: none;
+  z-index: 200;
+  width:50px;
+  border: 1px solid #e6e6e6;
+  background-color: #e6e6e6;
+  background-image: -webkit-linear-gradient(right, #e6e6e6, #d2d2d2);
+  background-image: -moz-linear-gradient(right, #e6e6e6, #d2d2d2);
+  background-image: -ms-linear-gradient(right, #e6e6e6, #d2d2d2);
+  background-image: -o-linear-gradient(right, #e6e6e6, #d2d2d2);
+}
+
+/*customised range when focusing on input */ input[type="range"].range:focus
+{
+  border: 0 !important;
+  outline: none !important;
+}
+
+/*customised range slider icon*/ input[type="range"].range::-webkit-slider-thumb
+{
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+background-color: #555;
+  background-image: -webkit-linear-gradient(right, #4DDBFF, #00CCFF);
+  background-image: -moz-linear-gradient(right, #4DDBFF, #00CCFF);
+  background-image: -ms-linear-gradient(right, #4DDBFF, #00CCFF);
+  background-image: -o-linear-gradient(right, #4DDBFF, #00CCFF);
+}
+
+/*setting round corners to the range */ input[type="range"].round {
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+}
+
+/*setting round corners to the range slider icon*/ input[type="range"].round::-webkit-slider-thumb {
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+}
+
+
+/* set range from 0 - 1 vertically (lowest on top) */ .vertical-lowest-first
+{
+  -webkit-transform:rotate(90deg);
+  -moz-transform:rotate(90deg);
+  -o-transform:rotate(90deg);
+  -ms-transform:rotate(90deg);
+  transform:rotate(90deg);
+}
+
+.palette_bgColor {
+  background: rgb(142, 142, 142) !important;
+  color: white;
+}
+
+.semi_transparent {
+  opacity: 0.5;
 }
 
 /* Page list div */
@@ -87,7 +267,7 @@ h1
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #bbb;
+  background-color: #5a5a5a;
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -126,3 +306,39 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+/* Grid */
+
+/* * {
+  box-sizing: border-box;
+}
+
+.header {
+  border: 1px solid red;
+  padding: 15px;
+}
+
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+[class*="col-"] {
+  float: left;
+  padding: 5px;
+  border-right: 1px solid white;
+}
+
+.col-1 {width: 8.33%;}
+.col-2 {width: 16.66%;}
+.col-3 {width: 25%;}
+.col-4 {width: 33.33%;}
+.col-5 {width: 41.66%;}
+.col-6 {width: 50%;}
+.col-7 {width: 58.33%;}
+.col-8 {width: 66.66%;}
+.col-9 {width: 75%;}
+.col-10 {width: 83.33%;}
+.col-11 {width: 91.66%;}
+.col-12 {width: 100%;} */
