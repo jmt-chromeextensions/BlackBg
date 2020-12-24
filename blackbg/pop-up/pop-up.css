@@ -69,6 +69,14 @@ h1
   position: fixed !important;
 }
 
+.sp-input-selected {
+  border: 1px solid #4DDBFF !important;
+}
+
+.sp-input-selected:focus {
+  outline-color: #4DDBFF;
+}
+
 /* Spectrum */
 
 .modal h2 {

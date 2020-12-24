@@ -1,4 +1,7 @@
 Custom Background Color
+
+ADAPTAR info de storage
+
 Añadir URL
 Agrupar por dominio/URL
 Textos de title de botones en español
@@ -7,3 +10,5 @@ moverse con flechas
 Opción de no tocar 
 are you sure quitar link
 Cambiar guiones por otra cosa porque los dominios pueden tener guiones
+
+#03152E

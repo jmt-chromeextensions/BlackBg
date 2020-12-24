@@ -20,7 +20,10 @@
   },  
   
   "background": {
-    "scripts": ["background_scripts/initialize_extension.js"],
+    "scripts": [
+      "background_scripts/initialize_extension.js",
+      "background_scripts/on_popup_close.js"
+    ],
     "persistent": false
   },
   "content_scripts": [

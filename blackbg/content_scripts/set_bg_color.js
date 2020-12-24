@@ -5,24 +5,36 @@ const hexToRgb = hex =>
 .map(x => parseInt(x, 16))
 .join(", ")})`
   
+const ENABLED = "enabled";
+const BACKGROUND = "background";
+const TEXT = "text";
+const ULINK = "ulink"; // Unvisited link
+const VLINK = "vlink"; // Visited link
+
+const COLOR_MODE = "color";
+const RANDOM_MODE = "random";
+const CYCLE_MODE = "cycle";
+const NOCOLOR_MODE = "nocolor";
 
 const HTML_ELEMENTS_EXCEPTIONS = "script, noscript, style, link, img, video";
 const HTML_VIP_ELEMENTS = 
 ".chat-author__display-name, textarea[autocomplete='twitch-chat'], .sp-thumb-inner"; // Twitch chat usernames
 	                            // Twitch chat box // Spectrum sample palette colors
 
-var customBgColor_HEX;
-var customBgColor_RGB;
-var customTextColor_HEX;
-var customTextColor_RGB;
-
-var customBgColor_HEX_preview;
-var customTextColor_HEX_preview;
-
 var pageEnabled = false;
 var itEverywhere = false;
 
-// Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (selectedPages).
+var customBgColor_HEX = "#000000", customBgColor_RGB, customBgColor_HEX_preview;
+var customTextColor_HEX = "#FFFFFF", customTextColor_RGB, customTextColor_HEX_preview;
+var customULinkColor_HEX, customULinkColor_RGB, customULinkColor_HEX_preview;
+var customVLinkColor_HEX, customVLinkColor_RGB, customVLinkColor_HEX_preview;
+
+var bgCycle_interval, bgCycle_ms;
+var textCycle_interval, textCycle_ms;
+var ulinkCycle_interval, ulinkCycle_ms;
+var vlinkCycle_interval, vlinkCycle_ms;
+
+// Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (sitesEnabled).
 var setBgColorInterval;
 var mutationObs = new MutationObserver(function(mutations) {
 	setNewElementsColor(mutations);
@@ -70,24 +82,20 @@ chrome.extension.onMessage.addListener(function (msg) {
 			break;
 
 		case "setSiteColorForPreview":
-			customBgColor_HEX_preview = msg.color;
-			// customBgColor_RGB = hexToRgb(customBgColor_HEX);
-			setSiteColorForPreview(true);
+
+			setSiteColorForPreview(msg.selection, msg.color);
 			break;
 
-		case "setSiteTextColorForPreview":
-			customTextColor_HEX_preview = msg.color;
-			// customTextColor_RGB = hexToRgb(customTextColor_HEX);
-			setSiteColorForPreview(false);
+		case "savePreview":
+
+			savePreview(msg.selection);
 			break;
 
-		case "stopPreviewBackground":
-			stopPreview(true);
-			break;
+		case "stopPreview":
 
-		case "stopPreviewText":
-			stopPreview(false);
+			stopPreview(msg.selection);
 			break;
+		
 	}
 
 });
@@ -95,41 +103,82 @@ chrome.extension.onMessage.addListener(function (msg) {
 function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 
 	// Load settings
-	chrome.storage.sync.get(['itEverywhere', 'selectedPages'], function (result) {
+	chrome.storage.sync.get(["itEverywhere", "sitesEnabled", "sitesBackground", "sitesText", "sitesULinks", "sitesVLinks"], function (result) {
 
 		if (result.itEverywhere === true)
 			itEverywhere = true;
 
 		let current_page = window.location.host;
-		let selectedPages = '';
+		let sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks;
 
-		selectedPages = result.selectedPages;
+		[sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] = [result.sitesEnabled, result.sitesBackground, result.sitesText, result.sitesULinks, result.sitesVLinks];
 
-		if (selectedPages)
-			selectedPages.forEach(function (selectedPage) {
+		if (sitesEnabled)
+			for (let i = 0; i < sitesEnabled.length; i++) {
 
-				let siteValues = selectedPage.split('/blv_ck_bg/')
+				let siteEnabled, siteBackground, siteText, siteULinks, siteVLinks;
+				let site = sitesEnabled[i].split("/blv_ck_bg/")[0];
+				[siteEnabled, siteBackground, siteText, siteULinks, siteVLinks] = 
+				[sitesEnabled[i].split("/blv_ck_bg/"), sitesBackground[i].split("/blv_ck_bg/"), sitesText[i].split("/blv_ck_bg/"), sitesULinks[i].split("/blv_ck_bg/"), sitesVLinks[i].split("/blv_ck_bg/")];
 
-				if (current_page === siteValues[0])
-					if (siteValues[1] === "enabled") {
+				if (current_page === site) {
+
+					if (siteEnabled[1] === "enabled")
 						pageEnabled = true;
 
-						if (siteValues.length == 2) {
-							customBgColor_HEX = "#000000" // Black by default
-							customBgColor_RGB = hexToRgb(customBgColor_HEX);
-						}
-						else {
-							customBgColor_HEX = `#${siteValues[2]}`
-							customBgColor_RGB = hexToRgb(customBgColor_HEX);
-						}
+					// Background color
+					switch (siteBackground[1]) {
 
-						if (siteValues.length == 4) { // Is there a better offer?
-							customTextColor_HEX = `#${siteValues[3]}`
-							customTextColor_RGB = hexToRgb(customTextColor_HEX);
-						}
+						case COLOR_MODE:
+							customBgColor_HEX = `#${siteBackground[2]}`
+							break;
+
+						case RANDOM_MODE:
+							customBgColor_HEX = getRandomHexColor();
+							break;
+
+						case CYCLE_MODE:
+							bgCycle_interval = `#${siteBackground[2]}`;
+							break;
+						
+					}
+					customBgColor_RGB = hexToRgb(customBgColor_HEX);
+						
+					// Text color
+					switch (siteText[1]) {
+
+						case COLOR_MODE:
+							customTextColor_HEX = `#${siteText[2]}`
+							break;
+
+						case RANDOM_MODE:
+							customTextColor_HEX = getRandomHexColor();
+							break;
 
 					}
-			});
+					customTextColor_RGB = hexToRgb(customTextColor_HEX);
+
+					// Visited links color
+					switch (siteULinks[1]) {
+
+						// case "color":
+						// 	customTextColor_HEX = `#${siteText[2]}`
+						// 	customTextColor_RGB = hexToRgb(customTextColor_HEX);
+						// break;
+
+					}
+
+					// Unvisited links color
+					switch (siteULinks[1]) {
+
+						// case "color":
+						// 	customTextColor_HEX = `#${siteText[2]}`
+						// 	customTextColor_RGB = hexToRgb(customTextColor_HEX);
+						// break;
+
+					}
+				}
+			};
 
 		if (pageEnabled || itEverywhere)
 			initCustomBgMode();
@@ -156,7 +205,9 @@ function setEverythingColorExceptElementsWithTransparentBackground() {
 				setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true);
 				$(this).addClass("blacktc_lets_go");
 			}
-			 
+
+		if ($(this).is("a"))
+			$(this).addClass("blackbg_link");
 		
 		// Add class this class to mark elements that have been already processed by this function
 		$(this).addClass("blackbg_pass");
@@ -203,11 +254,11 @@ function setNewElementsColor(mutations) {
 	}
 }
 
-function replaceCssAttributeValue(elem, attribute, value, important) {
-	const regex = new RegExp(`; ${attribute}:[^;]*;`);
-	let cssText_WithReplacedValue = $(elem).css('cssText').replace(regex, `; ${attribute}:${value}${important ? " !important" : ""};`);
-	$(elem).css('cssText', cssText_WithReplacedValue);
-}
+// function replaceCssAttributeValue(elem, attribute, value, important) {
+// 	const regex = new RegExp(`; ${attribute}:[^;]*;`);
+// 	let cssText_WithReplacedValue = $(elem).css('cssText').replace(regex, `; ${attribute}:${value}${important ? " !important" : ""};`);
+// 	$(elem).css('cssText', cssText_WithReplacedValue);
+// }
 
 function setCssProp_storePropInDataAttributeIfExistant (elem, prop, value, important) {
 
@@ -236,6 +287,8 @@ function removePropertyOrSetIfStored (elem, prop) {
 }
 
 function initCustomBgMode() {
+
+	initializeCycles();
 
 	// Page background
 	$("html, body").each(function () {
@@ -294,32 +347,91 @@ function revertCustomBgMode () {
 		$(this).removeClass("blackbg_pass");
 	});
 
-}
-
-function setSiteColorForPreview(background) {
-
-	if (background)
-		$("html,body, .blackbg_lets_go").each(function(){
-			setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX_preview, true)
-		});
-	else
-		$("html,body, .blacktc_lets_go").each(function(){
-			setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX_preview, true)
-		});
+	$("head #blv_ck_bg_ulinks, head #blv_ck_bg_vlinks").remove();
 
 }
 
-function stopPreview (background) { 
+function initializeCycles() {
 
-	if (background)
-		$("html,body, .blackbg_lets_go").each(function(){
-			setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
-		});
+	if (bgCycle_ms) {
+
+	}
 		
-	else
-		$("html,body, .blacktc_lets_go").each(function(){
-			setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
-		});
+
+}
+
+function setSiteColorForPreview(selection, color) {
+
+	switch (selection) {
+		case BACKGROUND:
+			customBgColor_HEX_preview = color;
+			if (pageEnabled || itEverywhere)
+				$("html,body, .blackbg_lets_go").each(function(){
+					setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX_preview, true)
+				});
+			break;
+
+		case TEXT:
+			customTextColor_HEX_preview = color;
+			if (pageEnabled || itEverywhere)
+				$("html,body, .blacktc_lets_go").each(function(){
+					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX_preview, true)
+				});
+			break;
+
+		case ULINK:
+			customULinkColor_HEX_preview = color;
+			if ($("head #blv_ck_bg_ulinks").length > 0)
+				$("head #blv_ck_bg_ulinks").html(`.blackbg_ulink{ color: ${color} }`);
+			else 
+				$("head").append(`<style type="text/css" id="blv_ck_bg_ulinks"> .blackbg_ulink{ color: ${color} } </style>`)
+			break;
+	}		
+
+}
+
+function savePreview (selection) { 
+
+	switch (selection) {
+		case BACKGROUND:
+			if (customBgColor_HEX_preview)
+				customBgColor_HEX = customBgColor_HEX_preview;
+
+			customBgColor_HEX_preview = '';			
+			break;
+
+		case TEXT:
+			if (customTextColor_HEX_preview)
+			customTextColor_HEX = customTextColor_HEX_preview;
+
+			customTextColor_HEX_preview = '';	
+			break;
+
+	}
+
+}
+
+
+function stopPreview (selection) { 
+
+	switch (selection) {
+		case BACKGROUND:
+			if (pageEnabled || itEverywhere)
+				$("html,body, .blackbg_lets_go").each(function(){
+					setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
+				});
+			customBgColor_HEX_preview = '';
+			break;
+
+		case TEXT:
+			if (pageEnabled || itEverywhere)
+				$("html,body, .blacktc_lets_go").each(function(){
+					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
+				});
+			customTextColor_HEX_preview = '';
+			break;
+
+	}
 
 }
 
