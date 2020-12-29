@@ -1,3 +1,26 @@
+/* *:not("data-blackbg_cbgcolor"^="rgba(0, 0, 0, 0"):not("data-blackbg_cbgcolor"^="rgb(0, 0, 0, 0") { */
+/* *:not([id^="swi"]) { */
+
+/* html, body {
+    background-color: black !important;
+}
+
+html, body, *:not([background-color^="rgba"]) {
+    background-color: black;
+}
+
+* {
+    color: white !important;
+}
+
+a:not(:visited) {
+    color: red !important;
+}
+
+a:visited {
+    color: pink !important;
+} */
+
 /* .blackbg_link {
     color: rgb(172, 255, 254) !important;
 }
@@ -48,3 +71,4 @@ body {
 /* *:not([background-color^="rgba(0, 0, 0"]):not(.blackbg_pass):not(.blackbg_lets_go):not(script):not(noscript):not(style):not(link):not(img):not(video) {
     background-color: black !important;
 } */
+

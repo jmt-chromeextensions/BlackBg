@@ -4,6 +4,9 @@ const hexToRgb = hex =>
 .substring(1).match(/.{2}/g)
 .map(x => parseInt(x, 16))
 .join(", ")})`
+
+const LINKS_STYLE_SECTION = 
+`<style type="text/css" id="blv_ck_bg_links"> XXX YYY </style>`
   
 const ENABLED = "enabled";
 const BACKGROUND = "background";
@@ -34,15 +37,31 @@ var textCycle_interval, textCycle_ms;
 var ulinkCycle_interval, ulinkCycle_ms;
 var vlinkCycle_interval, vlinkCycle_ms;
 
+var links_style, links_style_PREVIEW;
+
 // Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (sitesEnabled).
 var setBgColorInterval;
 var mutationObs = new MutationObserver(function(mutations) {
 	setNewElementsColor(mutations);
 });    
 
+
 $(document).ready(function () {
+	// $("*").each(function () {
+	// 	if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba(0, 0, 0, 0") && 
+	// 	!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgb(0, 0, 0"))
+	// 		$(this).addClass("data-blackbg_cbgcolor");
+	// });
 	activateCustomBgModeIfPageSelectedOrItEverywhere();
 });
+
+// setInterval(() => {
+// 	$("*").each(function () {
+// 		if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba(0, 0, 0, 0") && 
+// 		!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgb(0, 0, 0"))
+// 			$(this).addClass("data-blackbg_cbgcolor");
+// 	});
+// }, 1);
 
 // Inbox 📫
 chrome.extension.onMessage.addListener(function (msg) {
@@ -155,26 +174,44 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 							customTextColor_HEX = getRandomHexColor();
 							break;
 
+						case CYCLE_MODE:
+							textCycle_interval = `#${siteText[2]}`;
+							break;
+
 					}
 					customTextColor_RGB = hexToRgb(customTextColor_HEX);
 
 					// Visited links color
-					switch (siteULinks[1]) {
+					switch (siteVLinks[1]) {
 
-						// case "color":
-						// 	customTextColor_HEX = `#${siteText[2]}`
-						// 	customTextColor_RGB = hexToRgb(customTextColor_HEX);
-						// break;
+						case COLOR_MODE:
+							customVLinkColor_HEX = `#${siteVLinks[2]}`
+							break;
+
+						case RANDOM_MODE:
+							customVLinkColor_HEX = getRandomHexColor();
+							break;
+
+						case CYCLE_MODE:
+							vlinkCycle_interval = `#${siteVLinks[2]}`;
+							break;
 
 					}
 
 					// Unvisited links color
 					switch (siteULinks[1]) {
 
-						// case "color":
-						// 	customTextColor_HEX = `#${siteText[2]}`
-						// 	customTextColor_RGB = hexToRgb(customTextColor_HEX);
-						// break;
+						case COLOR_MODE:
+							customULinkColor_HEX = `#${siteULinks[2]}`
+							break;
+
+						case RANDOM_MODE:
+							customULinkColor_HEX = getRandomHexColor();
+							break;
+
+						case CYCLE_MODE:
+							ulinkCycle_interval = `#${siteULinks[2]}`;
+							break;
 
 					}
 				}
@@ -189,9 +226,11 @@ function setEverythingColorExceptElementsWithTransparentBackground() {
 
 	$("body").find("*").not(`.blackbg_pass, .blackbg_lets_go, .blacktc_lets_go, ${HTML_ELEMENTS_EXCEPTIONS}, ${HTML_VIP_ELEMENTS}`).each(function () {
 
-		if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba(0, 0, 0, 0") && 
-			!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgb(0, 0, 0")) 
-		{
+		
+
+		if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba")) {
+		// 	!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgb(0, 0, 0")) 
+		// {
 			setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true);
 			
 			// Add class to mark the elements whose backgrounds have already been set to black
@@ -288,8 +327,6 @@ function removePropertyOrSetIfStored (elem, prop) {
 
 function initCustomBgMode() {
 
-	initializeCycles();
-
 	// Page background
 	$("html, body").each(function () {
 		setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true);
@@ -310,6 +347,16 @@ function initCustomBgMode() {
 		// $(this).css("background-image", `${$(this).css("background-image")}pepe`);
 	});
 
+	// Add style section for links' colors
+	links_style = LINKS_STYLE_SECTION;
+	links_style = (customULinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX} !important; } `) : ""; 
+	links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
+	$("head").append(links_style);
+
+	// Elements with cycle mode activated
+	initializeCycles();
+
+	// Start continuous painting process
 	setEverythingColorExceptElementsWithTransparentBackground();
 	setBgColorInterval = setInterval(setEverythingColorExceptElementsWithTransparentBackground, 10);
 	// mutationObs.observe(document.body, { childList: true, attributes: true, subtree: true });
@@ -347,7 +394,7 @@ function revertCustomBgMode () {
 		$(this).removeClass("blackbg_pass");
 	});
 
-	$("head #blv_ck_bg_ulinks, head #blv_ck_bg_vlinks").remove();
+	$("head #blv_ck_bg_links").remove();
 
 }
 
@@ -361,6 +408,8 @@ function initializeCycles() {
 }
 
 function setSiteColorForPreview(selection, color) {
+
+	let links_style;
 
 	switch (selection) {
 		case BACKGROUND:
@@ -378,13 +427,39 @@ function setSiteColorForPreview(selection, color) {
 					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX_preview, true)
 				});
 			break;
-
+			
 		case ULINK:
 			customULinkColor_HEX_preview = color;
-			if ($("head #blv_ck_bg_ulinks").length > 0)
-				$("head #blv_ck_bg_ulinks").html(`.blackbg_ulink{ color: ${color} }`);
-			else 
-				$("head").append(`<style type="text/css" id="blv_ck_bg_ulinks"> .blackbg_ulink{ color: ${color} } </style>`)
+			if (pageEnabled || itEverywhere) {
+				if ($("head #blv_ck_bg_links").length > 0) {
+					links_style = `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `;
+					links_style += (customVLinkColor_HEX) ? `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }` : ""; 
+					$("head #blv_ck_bg_links").html(links_style);
+				}
+				else {
+					links_style = LINKS_STYLE_SECTION;
+					links_style = links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `); 
+					links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
+					$("head").append(links_style);
+				}
+			}
+			break;
+			
+		case VLINK:
+			customVLinkColor_HEX_preview = color;
+			if (pageEnabled || itEverywhere) {
+				if ($("head #blv_ck_bg_links").length > 0) {
+					links_style = (customULinkColor_HEX) ? `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } ` : ""; 
+					links_style += `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview} !important; }`;
+					$("head #blv_ck_bg_links").html(links_style);
+				}
+				else {
+					links_style = LINKS_STYLE_SECTION;
+					links_style = (customVLinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } `) : links_style.replace("XXX", ""); 
+					links_style = links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`); 
+					$("head").append(links_style);
+				}
+			}
 			break;
 	}		
 

@@ -118,7 +118,7 @@ var randomColorSelected = false;
 
 function getSelectionAndSetIt() {
 
-    let domain = $("input[data-palette='open']").attr("id").replace("color_", "").replace("text_", "").replaceAll("-", ".");
+    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
     let color = $(".sp-input").val().replace('#', '');
 
     let selection = $("input[data-palette='open']").attr("class").substring(12); // input_color_{selection}
@@ -134,7 +134,7 @@ function getSelectionAndSetIt() {
                     sitesBackground[index] = [domain, COLOR_MODE, color].join("/blv_ck_bg/");
                     break;
                     
-                case "random":
+                case RANDOM_MODE:
                     sitesBackground[index] = [domain, RANDOM_MODE].join("/blv_ck_bg/");
                     break;
             }
@@ -153,6 +153,32 @@ function getSelectionAndSetIt() {
             }
             break;
 
+        case ULINK:
+
+            switch (mode) {
+                case COLOR_MODE:
+                    sitesULinks[index] = [domain, COLOR_MODE, color].join("/blv_ck_bg/");
+                    break;
+                    
+                case RANDOM_MODE:
+                    sitesULinks[index] = [domain, RANDOM_MODE].join("/blv_ck_bg/");
+                    break;
+            }
+            break;
+
+        case VLINK:
+
+            switch (mode) {
+                case COLOR_MODE:
+                    sitesVLinks[index] = [domain, COLOR_MODE, color].join("/blv_ck_bg/");
+                    break;
+                    
+                case RANDOM_MODE:
+                    sitesVLinks[index] = [domain, RANDOM_MODE].join("/blv_ck_bg/");
+                    break;
+            }
+            break;
+
     }
 
     $("input[data-palette='open']").val(`#${color}`);
@@ -165,7 +191,7 @@ function siteColorPreview(color) {
 
     visualizeSelectedMode(COLOR_MODE);
 
-    let domain = $("input[data-palette='open']").attr("id").replace("color_", "").replace("text_", "").replaceAll("-", ".");
+    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
     let selection = $("input[data-palette='open']").attr("class").substring(12); // input_color_{selection}
 
     sendMessageToContentScripts("setSiteColorForPreview", domain, selection, color);
@@ -176,7 +202,7 @@ function randomColorPreview(color) {
 
     visualizeSelectedMode(RANDOM_MODE);
 
-    let domain = $("input[data-palette='open']").attr("id").replace("color_", "").replace("text_", "").replaceAll("-", ".");
+    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
     let selection = $("input[data-palette='open']").attr("class").substring(12); // input_color_{selection}
 
     sendMessageToContentScripts("setSiteColorForPreview", domain, selection, color);

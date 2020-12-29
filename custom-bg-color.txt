@@ -10,5 +10,6 @@ moverse con flechas
 Opción de no tocar 
 are you sure quitar link
 Cambiar guiones por otra cosa porque los dominios pueden tener guiones
+Botones para reemplazar colores y copiar color
 
 #03152E

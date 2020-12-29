@@ -1,16 +1,16 @@
 // Manage interaction with the popup and the selected pages list.
 
-const SAVED_PAGE_ELEM_TEMPLATE = 
+const SAVED_PAGE_ELEM_TEMPLATE =
 `<div class="saved_page" id="page_XXX">
     <a href="http://YYY" class="page_name">YYY</a>
     <div class="right">
         <label class="switch" id="lbl_XXX"><input type="checkbox" id="switch_XXX" data-domain="ZZZ">
         <span class="slider round"></span></label>
 
-        <input id="color_XXX" type="color" class="input_color_background">
-        <input id="color_text_XXX" type="color" class="input_color_text">
-        <input id="color_ulink_XXX" type="color" class="input_color_ulink">
-        <input id="color_vlink_XXX" type="color" class="input_color_vlink">
+        <input id="color_XXX" type="color" class="input_color_background" data-domain="XXX">
+        <input id="color_text_XXX" type="color" class="input_color_text" data-domain="XXX">
+        <input id="color_ulink_XXX" type="color" class="input_color_ulink" data-domain="XXX">
+        <input id="color_vlink_XXX" type="color" class="input_color_vlink" data-domain="XXX">
 
         <input type="image" src="../icons/delete.png" id="remove_XXX">
     </div>
@@ -66,9 +66,9 @@ $(document).ready(function () {
         containerClassName: 'palette_bgColor'
     });
 
-    $("#showInput").on('hide.spectrum', function(e, tinycolor) { 
+    $("#showInput").on('hide.spectrum', function(e, tinycolor) {
         if (not_hide_palette)
-            $("#showInput").spectrum("show"); 
+            $("#showInput").spectrum("show");
     }).on('move.spectrum', function(e, color) {
         if (!preview_color_just_set) {
             preview_color_just_set = true;
@@ -78,10 +78,10 @@ $(document).ready(function () {
             }, 100);
         }
     });
-    
+
     $(".sp-input").css("color", "white");
 
-    // Remove accept/cancel buttons 
+    // Remove accept/cancel buttons
     $(".sp-button-container.sp-cf").remove();
 
     $(".popup_title h2").click(openSiteInNewTab);
@@ -101,11 +101,11 @@ $(document).ready(function () {
         if (!randomColorSelected)
             paintRandomIcon();
     });
-    
+
     // RGB cycle icon
     initializeCycleIcon();
     $("#cycle_speed").change(cycleSpeedPreview);
-    
+
     // Activate different modes
     $("#color_selector .random_div").click(randomColorPreview);
     $("#color_selector .cycle_div").click(rgbCyclePreview);
@@ -152,7 +152,7 @@ $(document).ready(function () {
     // window.onblur(function () {
     //     closePaletteModal();
     // });
-    
+
 });
 
 function addNewSelectedPage() {
@@ -169,16 +169,16 @@ function addNewSelectedPage() {
             sitesText.push([domain, DEFAULT_TEXT.mode, DEFAULT_TEXT.value].join("/blv_ck_bg/"));
             sitesULinks.push([domain, DEFAULT_ULINK.mode, DEFAULT_ULINK.value].join("/blv_ck_bg/"));
             sitesVLinks.push([domain, DEFAULT_VLINK.mode, DEFAULT_VLINK.value].join("/blv_ck_bg/"));
-            
+
             // Domains alphabetically ordered
             [sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks].map(function (siteList) {
                 siteList.sort(function (c1, c2) {
                     return c1.replace("www.", "").localeCompare(c2.replace("www.", ""));
                 });
             });
-          
+
             chrome.storage.sync.set({
-                "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks }, 
+                "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
                 function () {addSelectedPageToPopup(domain, true, DEFAULT_BACKGROUND, DEFAULT_TEXT, DEFAULT_ULINK, DEFAULT_VLINK);
             })
 
@@ -199,7 +199,7 @@ function openSettingsTab() {
 }
 
 function openPaletteModal(event) {
-    
+
     // $("*").addClass("semi_transparent");
     // $("#color_modal").find("*").removeClass("semi_transparent");
     event.preventDefault();
@@ -218,7 +218,7 @@ function openPaletteModal(event) {
     let domain = event.data.domain.replaceAll("-", ".");
     $(".popup_title h2").text(domain).attr("href", `http://${domain}`);
     $(".popup_title h3").text(`Choose a color for ${event.data.selection}.`);
-    
+
     // Set palette to site's custom color
     if (event.data.color)
         $("#showInput").spectrum("set", event.data.color);
@@ -235,7 +235,7 @@ function openPaletteModal(event) {
         let topDiff = parseInt($(".sp-container").css("top").replace("px", "")) - $("body")[0].scrollTop;
         $(".sp-container").css("position", "fixed").css("top", topDiff);
 
-    }, 1); 
+    }, 1);
 
 }
 
@@ -264,11 +264,11 @@ function applyOnAllPages() {
     $("label[for='btn_all'").toggleClass("opacity_25");
     chrome.storage.sync.set({'itEverywhere': this.checked}, function() { });
 
-    if (this.checked) 
+    if (this.checked)
         sendMessageToContentScripts("applyOnAllPages");
-    else 
+    else
         sendMessageToContentScripts("notApplyOnAllPages");
-    
+
 }
 
 function addSelectedPageToPopup(domain, enabled, background, text, ulink, vlink) {
@@ -291,16 +291,19 @@ function addSelectedPageToPopup(domain, enabled, background, text, ulink, vlink)
 
     if (background && background.value)
         $(`#color_${domain}`).val(`#${background.value}`);
-    else
-        $(`#color_${domain}`).val('#000000'); // Black by default
+    // else
+    //     $(`#color_${domain}`).val('#000000'); // Black by default
 
     if (text && text.value)
         $(`#color_text_${domain}`).val(`#${text.value}`);
-    else
-        $(`#color_text_${domain}`).val('#FFFFFF'); // White by default
+    // else
+    //     $(`#color_text_${domain}`).val('#FFFFFF'); // White by default
 
-    if (text && text.value)
-        $(`#color_text_${domain}`).val(`#${text.value}`);
+    if (ulink && ulink.value)
+        $(`#color_ulink_${domain}`).val(`#${ulink.value}`);
+
+    if (vlink && vlink.value)
+        $(`#color_vlink_${domain}`).val(`#${vlink.value}`);
 
     // Open site in new tab when URL is clicked
     $(`#page_${domain} .page_name`).click(openSiteInNewTab);
@@ -310,9 +313,9 @@ function addSelectedPageToPopup(domain, enabled, background, text, ulink, vlink)
 
     // Set site's custom background color
     $(`#color_${domain}`).bind('click', { domain: domain, color: background.value, selection:BACKGROUND, mode: background.mode }, openPaletteModal);
-
-    // Same for text's color
     $(`#color_text_${domain}`).bind('click', { domain: domain, color: text.value, selection:TEXT, mode: text.mode }, openPaletteModal);
+    $(`#color_ulink_${domain}`).bind('click', { domain: domain, color: ulink.value, selection:ULINK, mode: ulink.mode }, openPaletteModal);
+    $(`#color_vlink_${domain}`).bind('click', { domain: domain, color: vlink.value, selection:VLINK, mode: vlink.mode }, openPaletteModal);
 
     // Delete selected page from list (popup and storage; asks for confirmation)
     $(`#remove_${domain}`).bind('click', { enabled: enabled }, deleteConfirmOptions);
@@ -322,7 +325,7 @@ function openSiteInNewTab() {
     let url = $(this).attr('href');
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         // Open new tab with the video to the right of the current one
-        chrome.tabs.create({ url: url, active: false, index: (tabs[0].index + 1) }); 
+        chrome.tabs.create({ url: url, active: false, index: (tabs[0].index + 1) });
     });
     return false;
 }
@@ -370,7 +373,7 @@ function deleteSelectedPage() {
     sitesVLinks = sitesVLinks.filter(page_info => !page_info.includes(domain));
 
     chrome.storage.sync.set({
-        "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks }, 
+        "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
         function () { location.reload(); }
     );
     sendMessageToContentScripts("deactivateBlackBgMode", domain);
@@ -392,7 +395,7 @@ function saveSites(type) {
     if (type) {
 
         switch(type) {
-            
+
             case ENABLED:
                 chrome.storage.sync.set({ 'sitesEnabled': sitesEnabled }, function () { console.log(); });
                 break;
@@ -405,12 +408,20 @@ function saveSites(type) {
                 chrome.storage.sync.set({ 'sitesText': sitesText }, function () { console.log(); });
                 break;
 
+            case ULINK:
+                chrome.storage.sync.set({ 'sitesULinks': sitesULinks }, function () { console.log(); });
+                break;
+
+            case VLINK:
+                chrome.storage.sync.set({ 'sitesVLinks': sitesVLinks }, function () { console.log(); });
+                break;
+
         }
 
     } else
         chrome.storage.sync.set({
-            "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks }, 
-            function () { console.log(); 
+            "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
+            function () { console.log();
         });
 
 }
@@ -435,7 +446,13 @@ function getPageIndexInArrayByDomain(domain, selection) {
 
         case TEXT:
             return sitesText.indexOf(sitesText.find(page_info => page_info.includes(domain)));
-            
+
+        case ULINK:
+            return sitesULinks.indexOf(sitesULinks.find(page_info => page_info.includes(domain)));
+
+        case VLINK:
+            return sitesVLinks.indexOf(sitesVLinks.find(page_info => page_info.includes(domain)));
+
         default:
             return sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes(domain)));
 
