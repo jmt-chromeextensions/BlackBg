@@ -7,6 +7,22 @@ const hexToRgb = hex =>
 
 const LINKS_STYLE_SECTION = 
 `<style type="text/css" id="blv_ck_bg_links"> XXX YYY </style>`
+
+const getCssSelectorShort = (el) => {
+	let path = [], parent;
+	while (parent = el.parentNode) {
+	  let tag = el.tagName, siblings;
+	  path.unshift(
+		el.id ? `#${el.id}` : (
+		  siblings = parent.children,
+		  [].filter.call(siblings, sibling => sibling.tagName === tag).length === 1 ? tag :
+		  `${tag}:nth-child(${1+[].indexOf.call(siblings, el)})`
+		)
+	  );
+	  el = parent;
+	};
+	return `${path.join(' > ')}`.toLowerCase();
+  };
   
 const ENABLED = "enabled";
 const BACKGROUND = "background";
@@ -39,12 +55,31 @@ var vlinkCycle_interval, vlinkCycle_ms;
 
 var links_style, links_style_PREVIEW;
 
+var selectors = [];
+
 // Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (sitesEnabled).
 var setBgColorInterval;
 var mutationObs = new MutationObserver(function(mutations) {
 	setNewElementsColor(mutations);
 });    
 
+
+$("head").prepend(`<style type="text/css" id="blv_ck_bg_links"></style>`);
+
+	
+	$("*").each(function () {
+		if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba")) {
+			let selector = getCssSelectorShort(this);
+			if (!selectors.includes(selector)) {
+				selectors.push(selector);
+				var sheet = $("#blv_ck_bg_links").get(0).sheet;
+
+				// Add the first CSS rule to the stylesheet
+				sheet.insertRule(`${selector} { background-color: black !important; }`, 0);
+			}
+		}		
+
+	})
 
 $(document).ready(function () {
 	// $("*").each(function () {
@@ -351,14 +386,30 @@ function initCustomBgMode() {
 	links_style = LINKS_STYLE_SECTION;
 	links_style = (customULinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX} !important; } `) : ""; 
 	links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
-	$("head").append(links_style);
+	
+	// $("head").prepend(`<style type="text/css" id="blv_ck_bg_links"></style>`);
 
-	// Elements with cycle mode activated
-	initializeCycles();
+	
+	// $("*").each(function () {
+	// 	if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba")) {
+	// 		let selector = getCssSelectorShort(this);
+	// 		if (!selectors.includes(selector)) {
+	// 			selectors.push(selector);
+	// 			var sheet = $("#blv_ck_bg_links").get(0).sheet;
 
-	// Start continuous painting process
-	setEverythingColorExceptElementsWithTransparentBackground();
-	setBgColorInterval = setInterval(setEverythingColorExceptElementsWithTransparentBackground, 10);
+	// 			// Add the first CSS rule to the stylesheet
+	// 			sheet.insertRule(`${selector} { background-color: black !important; }`, 0);
+	// 		}
+	// 	}		
+
+	// })
+
+	// // Elements with cycle mode activated
+	// initializeCycles();
+
+	// // Start continuous painting process
+	// setEverythingColorExceptElementsWithTransparentBackground();
+	// setBgColorInterval = setInterval(setEverythingColorExceptElementsWithTransparentBackground, 10);
 	// mutationObs.observe(document.body, { childList: true, attributes: true, subtree: true });
 }
 
