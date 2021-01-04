@@ -7,10 +7,10 @@ const SAVED_PAGE_ELEM_TEMPLATE =
         <label class="switch" id="lbl_XXX"><input type="checkbox" id="switch_XXX" data-domain="ZZZ">
         <span class="slider round"></span></label>
 
-        <input id="color_XXX" type="color" class="input_color_background" data-domain="XXX">
-        <input id="color_text_XXX" type="color" class="input_color_text" data-domain="XXX">
-        <input id="color_ulink_XXX" type="color" class="input_color_ulink" data-domain="XXX">
-        <input id="color_vlink_XXX" type="color" class="input_color_vlink" data-domain="XXX">
+        <input id="color_XXX" type="color" class="input_color_background" data-domain="ZZZ">
+        <input id="color_text_XXX" type="color" class="input_color_text" data-domain="ZZZ">
+        <input id="color_ulink_XXX" type="color" class="input_color_ulink" data-domain="ZZZ">
+        <input id="color_vlink_XXX" type="color" class="input_color_vlink" data-domain="ZZZ">
 
         <input type="image" src="../icons/delete.png" id="remove_XXX">
     </div>
@@ -107,7 +107,6 @@ $(document).ready(function () {
     $("#cycle_speed").change(cycleSpeedPreview);
 
     // Activate different modes
-    $("#color_selector .random_div").click(randomColorPreview);
     $("#color_selector .cycle_div").click(rgbCyclePreview);
 
 // #endregion
@@ -220,8 +219,8 @@ function openPaletteModal(event) {
     $(".popup_title h3").text(`Choose a color for ${event.data.selection}.`);
 
     // Set palette to site's custom color
-    if (event.data.color)
-        $("#showInput").spectrum("set", event.data.color);
+    if ($(this).val())
+        $("#showInput").spectrum("set", $(this).val());
 
     $("#color_selector").show();
     not_hide_palette = true;
@@ -249,7 +248,7 @@ function closePaletteModal(saveChanges) {
     }
 
     // Send message to stop preview (apply changes in webpage if accept button has been pressed)
-    let domain = $("input[data-palette='open']").attr("id").replace("color_", "").replace("text_", "").replaceAll("-", ".");
+    let domain = $("input[data-palette='open']").attr("data-domain");
     let selection = $("input[data-palette='open']").attr("class").substring(12); // input_color_{selection}
 
     sendMessageToContentScripts(saveChanges ? "savePreview" : "stopPreview", domain, selection);
@@ -312,10 +311,10 @@ function addSelectedPageToPopup(domain, enabled, background, text, ulink, vlink)
     $(`#switch_${domain}`).bind('change', (delayFunction(enableDisablePage, 1)));
 
     // Set site's custom background color
-    $(`#color_${domain}`).bind('click', { domain: domain, color: background.value, selection:BACKGROUND, mode: background.mode }, openPaletteModal);
-    $(`#color_text_${domain}`).bind('click', { domain: domain, color: text.value, selection:TEXT, mode: text.mode }, openPaletteModal);
-    $(`#color_ulink_${domain}`).bind('click', { domain: domain, color: ulink.value, selection:ULINK, mode: ulink.mode }, openPaletteModal);
-    $(`#color_vlink_${domain}`).bind('click', { domain: domain, color: vlink.value, selection:VLINK, mode: vlink.mode }, openPaletteModal);
+    $(`#color_${domain}`).bind('click', { domain: domain, selection:BACKGROUND, mode: background.mode }, openPaletteModal);
+    $(`#color_text_${domain}`).bind('click', { domain: domain, selection:TEXT, mode: text.mode }, openPaletteModal);
+    $(`#color_ulink_${domain}`).bind('click', { domain: domain, selection:ULINK, mode: ulink.mode }, openPaletteModal);
+    $(`#color_vlink_${domain}`).bind('click', { domain: domain, selection:VLINK, mode: vlink.mode }, openPaletteModal);
 
     // Delete selected page from list (popup and storage; asks for confirmation)
     $(`#remove_${domain}`).bind('click', { enabled: enabled }, deleteConfirmOptions);

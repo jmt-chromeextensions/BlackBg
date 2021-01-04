@@ -5,8 +5,8 @@ const hexToRgb = hex =>
 .map(x => parseInt(x, 16))
 .join(", ")})`
 
-const LINKS_STYLE_SECTION = 
-`<style type="text/css" id="blv_ck_bg_links"> XXX YYY </style>`
+const LINKS_STYLESHEET_ID = "blv_ck_bg_links"
+const LINKS_STYLE_SECTION = `<style type="text/css" id="${LINKS_STYLESHEET_ID}" media="not all"> </style>`
   
 const ENABLED = "enabled";
 const BACKGROUND = "background";
@@ -21,8 +21,8 @@ const NOCOLOR_MODE = "nocolor";
 
 const HTML_ELEMENTS_EXCEPTIONS = "script, noscript, style, link, img, video";
 const HTML_VIP_ELEMENTS = 
-".chat-author__display-name, textarea[autocomplete='twitch-chat'], .sp-thumb-inner"; // Twitch chat usernames
-	                            // Twitch chat box // Spectrum sample palette colors
+".chat-author__display-name, textarea[autocomplete='twitch-chat'], .sp-thumb-inner, .r-6416eg"; // Twitch chat usernames
+	                            // Twitch chat box // Spectrum sample palette colors // Twitter profile pictures (in TL)
 
 var pageEnabled = false;
 var itEverywhere = false;
@@ -181,23 +181,6 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 					}
 					customTextColor_RGB = hexToRgb(customTextColor_HEX);
 
-					// Visited links color
-					switch (siteVLinks[1]) {
-
-						case COLOR_MODE:
-							customVLinkColor_HEX = `#${siteVLinks[2]}`
-							break;
-
-						case RANDOM_MODE:
-							customVLinkColor_HEX = getRandomHexColor();
-							break;
-
-						case CYCLE_MODE:
-							vlinkCycle_interval = `#${siteVLinks[2]}`;
-							break;
-
-					}
-
 					// Unvisited links color
 					switch (siteULinks[1]) {
 
@@ -214,8 +197,29 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 							break;
 
 					}
+
+					// Visited links color
+					switch (siteVLinks[1]) {
+
+						case COLOR_MODE:
+							customVLinkColor_HEX = `#${siteVLinks[2]}`
+							break;
+
+						case RANDOM_MODE:
+							customVLinkColor_HEX = getRandomHexColor();
+							break;
+
+						case CYCLE_MODE:
+							vlinkCycle_interval = `#${siteVLinks[2]}`;
+							break;
+
+					}
+					
 				}
 			};
+
+		// Add stylesheet for links' colors
+		$("head").append(LINKS_STYLE_SECTION);
 
 		if (pageEnabled || itEverywhere)
 			initCustomBgMode();
@@ -226,9 +230,8 @@ function setEverythingColorExceptElementsWithTransparentBackground() {
 
 	$("body").find("*").not(`.blackbg_pass, .blackbg_lets_go, .blacktc_lets_go, ${HTML_ELEMENTS_EXCEPTIONS}, ${HTML_VIP_ELEMENTS}`).each(function () {
 
-		
-
-		if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba")) {
+		if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba(0, 0, 0")) {
+		// if (!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgba")) {
 		// 	!window.getComputedStyle(this).getPropertyValue("background-color").startsWith("rgb(0, 0, 0")) 
 		// {
 			setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true);
@@ -347,11 +350,15 @@ function initCustomBgMode() {
 		// $(this).css("background-image", `${$(this).css("background-image")}pepe`);
 	});
 
-	// Add style section for links' colors
-	links_style = LINKS_STYLE_SECTION;
-	links_style = (customULinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX} !important; } `) : ""; 
-	links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
-	$("head").append(links_style);
+	// Add CSS rules for links' colors and 'activate' stylesheet
+	if (customULinkColor_HEX)
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited)", "color", customULinkColor_HEX, true);
+	if (customVLinkColor_HEX)
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited", "color", customVLinkColor_HEX, true);
+
+	$(`#${LINKS_STYLESHEET_ID}`).attr("media", "");
+	// links_style = (customULinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX} !important; } `) : ""; 
+	// links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
 
 	// Elements with cycle mode activated
 	initializeCycles();
@@ -394,7 +401,7 @@ function revertCustomBgMode () {
 		$(this).removeClass("blackbg_pass");
 	});
 
-	$("head #blv_ck_bg_links").remove();
+	$(`#${LINKS_STYLESHEET_ID}`).attr("media", "not all");
 
 }
 
@@ -408,8 +415,6 @@ function initializeCycles() {
 }
 
 function setSiteColorForPreview(selection, color) {
-
-	let links_style;
 
 	switch (selection) {
 		case BACKGROUND:
@@ -430,36 +435,38 @@ function setSiteColorForPreview(selection, color) {
 			
 		case ULINK:
 			customULinkColor_HEX_preview = color;
-			if (pageEnabled || itEverywhere) {
-				if ($("head #blv_ck_bg_links").length > 0) {
-					links_style = `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `;
-					links_style += (customVLinkColor_HEX) ? `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }` : ""; 
-					$("head #blv_ck_bg_links").html(links_style);
-				}
-				else {
-					links_style = LINKS_STYLE_SECTION;
-					links_style = links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `); 
-					links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
-					$("head").append(links_style);
-				}
-			}
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited)", "color", customULinkColor_HEX_preview, true);
+			// if (pageEnabled || itEverywhere) {
+			// 	if ($("head #blv_ck_bg_links").length > 0) {
+			// 		links_style = `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `;
+			// 		links_style += (customVLinkColor_HEX) ? `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }` : ""; 
+			// 		$("head #blv_ck_bg_links").html(links_style);
+			// 	}
+			// 	else {
+			// 		links_style = LINKS_STYLE_SECTION;
+			// 		links_style = links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `); 
+			// 		links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
+			// 		$("head").append(links_style);
+			// 	}
+			// }
 			break;
 			
 		case VLINK:
 			customVLinkColor_HEX_preview = color;
-			if (pageEnabled || itEverywhere) {
-				if ($("head #blv_ck_bg_links").length > 0) {
-					links_style = (customULinkColor_HEX) ? `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } ` : ""; 
-					links_style += `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview} !important; }`;
-					$("head #blv_ck_bg_links").html(links_style);
-				}
-				else {
-					links_style = LINKS_STYLE_SECTION;
-					links_style = (customVLinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } `) : links_style.replace("XXX", ""); 
-					links_style = links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`); 
-					$("head").append(links_style);
-				}
-			}
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited", "color", customVLinkColor_HEX_preview, true);
+			// if (pageEnabled || itEverywhere) {
+			// 	if ($("head #blv_ck_bg_links").length > 0) {
+			// 		links_style = (customULinkColor_HEX) ? `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } ` : ""; 
+			// 		links_style += `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview} !important; }`;
+			// 		$("head #blv_ck_bg_links").html(links_style);
+			// 	}
+			// 	else {
+			// 		links_style = LINKS_STYLE_SECTION;
+			// 		links_style = (customVLinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } `) : links_style.replace("XXX", ""); 
+			// 		links_style = links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`); 
+			// 		$("head").append(links_style);
+			// 	}
+			// }
 			break;
 	}		
 
@@ -472,6 +479,7 @@ function savePreview (selection) {
 			if (customBgColor_HEX_preview)
 				customBgColor_HEX = customBgColor_HEX_preview;
 
+			// Remove last preview color
 			customBgColor_HEX_preview = '';			
 			break;
 
@@ -480,6 +488,20 @@ function savePreview (selection) {
 			customTextColor_HEX = customTextColor_HEX_preview;
 
 			customTextColor_HEX_preview = '';	
+			break;
+
+		case ULINK:
+			if (customULinkColor_HEX_preview)
+			customULinkColor_HEX = customULinkColor_HEX_preview;
+
+			customULinkColor_HEX_preview = '';	
+			break;
+
+		case VLINK:
+			if (customVLinkColor_HEX_preview)
+			customVLinkColor_HEX = customVLinkColor_HEX_preview;
+
+			customVLinkColor_HEX_preview = '';	
 			break;
 
 	}
@@ -504,6 +526,16 @@ function stopPreview (selection) {
 					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
 				});
 			customTextColor_HEX_preview = '';
+			break;
+			
+		case ULINK:
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited)", "color", customULinkColor_HEX, true);
+			customULinkColor_HEX_preview = '';
+			break;
+
+		case VLINK:
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited", "color", customVLinkColor_HEX, true);
+			customVLinkColor_HEX_preview = '';
 			break;
 
 	}

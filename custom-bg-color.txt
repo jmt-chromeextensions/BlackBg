@@ -11,5 +11,7 @@ Opción de no tocar
 are you sure quitar link
 Cambiar guiones por otra cosa porque los dominios pueden tener guiones
 Botones para reemplazar colores y copiar color
+Mostrar color que ha salido random
+Poder guardar color random
 
 #03152E
