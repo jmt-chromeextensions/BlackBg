@@ -21,23 +21,25 @@ const NOCOLOR_MODE = "nocolor";
 
 const HTML_ELEMENTS_EXCEPTIONS = "script, noscript, style, link, img, video";
 const HTML_VIP_ELEMENTS = 
-".chat-author__display-name, textarea[autocomplete='twitch-chat'], .sp-thumb-inner, .r-6416eg"; // Twitch chat usernames
-	                            // Twitch chat box // Spectrum sample palette colors // Twitter profile pictures (in TL)
+".chat-author__display-name, textarea[autocomplete='twitch-chat'], .sp-thumb-inner, .r-6416eg, #progress.style-scope, .ScChannelStatusIndicator-sc-1cf6j56-0"; // Twitch chat usernames 
+								// Twitch chat box // Spectrum sample palette colors // Twitter profile pictures (in TL) // YouTube thumbnails' progress bar // Twitch followed channels columns: live red circle icon
+								
+// .tw-flex-grow-1, // Twitch chat usernames (VODs)	 							
 
 var pageEnabled = false;
 var itEverywhere = false;
+
+var previewMode = new Map();
 
 var customBgColor_HEX = "#000000", customBgColor_RGB, customBgColor_HEX_preview;
 var customTextColor_HEX = "#FFFFFF", customTextColor_RGB, customTextColor_HEX_preview;
 var customULinkColor_HEX, customULinkColor_RGB, customULinkColor_HEX_preview;
 var customVLinkColor_HEX, customVLinkColor_RGB, customVLinkColor_HEX_preview;
 
-var bgCycle_interval, bgCycle_ms;
-var textCycle_interval, textCycle_ms;
-var ulinkCycle_interval, ulinkCycle_ms;
-var vlinkCycle_interval, vlinkCycle_ms;
-
-var links_style, links_style_PREVIEW;
+var bgCycle_interval = false, bgCycle_interval_preview = false, bgCycle_step, bgCycle_ms, bgCycle_ms_preview;
+var textCycle_interval = false, textCycle_interval_preview = false, textCycle_step, textCycle_ms, textCycle_ms_preview;
+var ulinkCycle_interval = false, ulinkCycle_interval_preview = false, ulinkCycle_step, ulinkCycle_ms, ulinkCycle_ms_preview;
+var vlinkCycle_interval = false, vlinkCycle_interval_preview = false, vlinkCycle_step, vlinkCycle_ms, vlinkCycle_ms_preview;
 
 // Set body's backgroundColor to black if window.location.host is contained in the storaged selected sites (sitesEnabled).
 var setBgColorInterval;
@@ -53,6 +55,7 @@ $(document).ready(function () {
 	// 		$(this).addClass("data-blackbg_cbgcolor");
 	// });
 	activateCustomBgModeIfPageSelectedOrItEverywhere();
+	// stopPreview(BACKGROUND);
 });
 
 // setInterval(() => {
@@ -101,17 +104,26 @@ chrome.extension.onMessage.addListener(function (msg) {
 			break;
 
 		case "setSiteColorForPreview":
+			setSiteColorForPreview(msg.selection, msg.value);
+			break;
 
-			setSiteColorForPreview(msg.selection, msg.color);
+		case "startCycleForPreview":
+			startCycleForPreview(msg.selection, msg.value);
+			break;
+
+		case "setCycleSpeedForPreview":
+			setCycleSpeedForPreview(msg.selection, msg.value);
+			break;
+
+		case "noColorForPreview":
+			noColorForPreview(msg.selection);
 			break;
 
 		case "savePreview":
-
 			savePreview(msg.selection);
 			break;
 
 		case "stopPreview":
-
 			stopPreview(msg.selection);
 			break;
 		
@@ -153,15 +165,22 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 							break;
 
 						case RANDOM_MODE:
-							customBgColor_HEX = getRandomHexColor();
+							customBgColor_HEX = getPaddedRandomHexColor();
 							break;
 
 						case CYCLE_MODE:
-							bgCycle_interval = `#${siteBackground[2]}`;
+							bgCycle_ms = siteBackground[2];
+							bgCycle_interval = true;
+							break;
+
+						case NOCOLOR_MODE:
+							customBgColor_HEX = '';
 							break;
 						
 					}
-					customBgColor_RGB = hexToRgb(customBgColor_HEX);
+
+					if (customBgColor_HEX)
+						customBgColor_RGB = hexToRgb(customBgColor_HEX);
 						
 					// Text color
 					switch (siteText[1]) {
@@ -171,15 +190,22 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 							break;
 
 						case RANDOM_MODE:
-							customTextColor_HEX = getRandomHexColor();
+							customTextColor_HEX = getPaddedRandomHexColor();
 							break;
 
 						case CYCLE_MODE:
-							textCycle_interval = `#${siteText[2]}`;
+							textCycle_ms = siteText[2];
+							textCycle_interval = true;
+							break;
+						
+						case NOCOLOR_MODE:
+							customTextColor_HEX = '';
 							break;
 
 					}
-					customTextColor_RGB = hexToRgb(customTextColor_HEX);
+
+					if (customTextColor_HEX)
+						customTextColor_RGB = hexToRgb(customTextColor_HEX);
 
 					// Unvisited links color
 					switch (siteULinks[1]) {
@@ -189,15 +215,24 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 							break;
 
 						case RANDOM_MODE:
-							customULinkColor_HEX = getRandomHexColor();
+							customULinkColor_HEX = getPaddedRandomHexColor();
 							break;
 
 						case CYCLE_MODE:
-							ulinkCycle_interval = `#${siteULinks[2]}`;
+							ulinkCycle_ms = siteULinks[2];
+							ulinkCycle_interval = true;
 							break;
 
-					}
+						case NOCOLOR_MODE:
+							customULinkColor_HEX = '';
+							break;
 
+							
+						}
+					
+					if (customULinkColor_HEX)
+						customULinkColor_RGB = hexToRgb(customULinkColor_HEX);
+						
 					// Visited links color
 					switch (siteVLinks[1]) {
 
@@ -206,20 +241,28 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 							break;
 
 						case RANDOM_MODE:
-							customVLinkColor_HEX = getRandomHexColor();
+							customVLinkColor_HEX = getPaddedRandomHexColor();
 							break;
 
 						case CYCLE_MODE:
-							vlinkCycle_interval = `#${siteVLinks[2]}`;
+							vlinkCycle_ms = siteVLinks[2];
+							vlinkCycle_interval = true;
+							break;
+
+						case NOCOLOR_MODE:
+							customVLinkColor_HEX = '';
 							break;
 
 					}
+
+					if (customVLinkColor_HEX)
+						customVLinkColor_RGB = hexToRgb(customVLinkColor_HEX);
 					
 				}
 			};
 
 		// Add stylesheet for links' colors
-		$("head").append(LINKS_STYLE_SECTION);
+		$("head").prepend(LINKS_STYLE_SECTION);
 
 		if (pageEnabled || itEverywhere)
 			initCustomBgMode();
@@ -243,12 +286,12 @@ function setEverythingColorExceptElementsWithTransparentBackground() {
 		// All texts' color need to be white
 		// if (!window.getComputedStyle(this).getPropertyValue("color").startsWith("rgb(255, 255, 255"))
 		if (customTextColor_HEX)
-			if (!$(this).is("a")) {
+			if (!$(this).is("a") && $(this).parents("a").length == 0) {
 				setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true);
 				$(this).addClass("blacktc_lets_go");
 			}
 
-		if ($(this).is("a"))
+		if ($(this).is("a") || $(this).parents("a").length > 0)
 			$(this).addClass("blackbg_link");
 		
 		// Add class this class to mark elements that have been already processed by this function
@@ -352,20 +395,22 @@ function initCustomBgMode() {
 
 	// Add CSS rules for links' colors and 'activate' stylesheet
 	if (customULinkColor_HEX)
-		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited)", "color", customULinkColor_HEX, true);
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX, true);
+	
 	if (customVLinkColor_HEX)
-		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited", "color", customVLinkColor_HEX, true);
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX, true);
 
 	$(`#${LINKS_STYLESHEET_ID}`).attr("media", "");
 	// links_style = (customULinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX} !important; } `) : ""; 
 	// links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
 
 	// Elements with cycle mode activated
-	initializeCycles();
+	if (pageEnabled || itEverywhere)
+		initializeCycles();
 
 	// Start continuous painting process
 	setEverythingColorExceptElementsWithTransparentBackground();
-	setBgColorInterval = setInterval(setEverythingColorExceptElementsWithTransparentBackground, 10);
+	setBgColorInterval = setInterval(setEverythingColorExceptElementsWithTransparentBackground, 50);
 	// mutationObs.observe(document.body, { childList: true, attributes: true, subtree: true });
 }
 
@@ -405,20 +450,18 @@ function revertCustomBgMode () {
 
 }
 
-function initializeCycles() {
+function setSiteColorForPreview(selection, color, cycle) {
 
-	if (bgCycle_ms) {
-
-	}
-		
-
-}
-
-function setSiteColorForPreview(selection, color) {
+	previewMode.set(selection, COLOR_MODE);
 
 	switch (selection) {
 		case BACKGROUND:
-			customBgColor_HEX_preview = color;
+
+			if (!cycle) {
+				customBgColor_HEX_preview = color;
+				bgCycle_interval = false;
+			}
+
 			if (pageEnabled || itEverywhere)
 				$("html,body, .blackbg_lets_go").each(function(){
 					setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX_preview, true)
@@ -426,7 +469,12 @@ function setSiteColorForPreview(selection, color) {
 			break;
 
 		case TEXT:
-			customTextColor_HEX_preview = color;
+
+			if (!cycle) {
+				customTextColor_HEX_preview = color;
+				textCycle_interval = false;
+			}
+			
 			if (pageEnabled || itEverywhere)
 				$("html,body, .blacktc_lets_go").each(function(){
 					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX_preview, true)
@@ -435,38 +483,59 @@ function setSiteColorForPreview(selection, color) {
 			
 		case ULINK:
 			customULinkColor_HEX_preview = color;
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited)", "color", customULinkColor_HEX_preview, true);
-			// if (pageEnabled || itEverywhere) {
-			// 	if ($("head #blv_ck_bg_links").length > 0) {
-			// 		links_style = `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `;
-			// 		links_style += (customVLinkColor_HEX) ? `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }` : ""; 
-			// 		$("head #blv_ck_bg_links").html(links_style);
-			// 	}
-			// 	else {
-			// 		links_style = LINKS_STYLE_SECTION;
-			// 		links_style = links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview} !important; } `); 
-			// 		links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
-			// 		$("head").append(links_style);
-			// 	}
-			// }
+			ulinkCycle_interval = false;
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX_preview, true);
 			break;
 			
 		case VLINK:
 			customVLinkColor_HEX_preview = color;
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited", "color", customVLinkColor_HEX_preview, true);
-			// if (pageEnabled || itEverywhere) {
-			// 	if ($("head #blv_ck_bg_links").length > 0) {
-			// 		links_style = (customULinkColor_HEX) ? `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } ` : ""; 
-			// 		links_style += `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview} !important; }`;
-			// 		$("head #blv_ck_bg_links").html(links_style);
-			// 	}
-			// 	else {
-			// 		links_style = LINKS_STYLE_SECTION;
-			// 		links_style = (customVLinkColor_HEX) ? links_style.replace("XXX", `.blackbg_link:not(:visited) { color: ${customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX} !important; } `) : links_style.replace("XXX", ""); 
-			// 		links_style = links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX} !important; }`); 
-			// 		$("head").append(links_style);
-			// 	}
-			// }
+			vlinkCycle_interval = false;
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX_preview, true);
+			break;
+	}		
+
+}
+
+// According to pop-up's functionality, it is assumed that a cycle is not being executed if this function is reached
+function startCycleForPreview(selection, cycleInterval) {
+
+	previewMode.set(selection, CYCLE_MODE);
+	
+	switch (selection) {
+		case BACKGROUND:
+			bgCycle_interval = true;
+			bgCycle_ms_preview = cycleInterval;
+			
+			customBgColor_HEX_preview = "ff0000";
+			bgCycle_step = 1;
+			cycleBackground();
+			break;
+
+		case TEXT:
+			textCycle_interval = true;
+			textCycle_ms_preview = cycleInterval;
+			
+			customTextColor_HEX_preview = "ff0000";
+			textCycle_step = 1;
+			cycleText();
+			break;
+			
+		case ULINK:
+			ulinkCycle_interval = true;
+			ulinkCycle_ms_preview = cycleInterval;
+			
+			customULinkColor_HEX_preview = "ff0000";
+			ulinkCycle_step = 1;
+			cycleULink();
+			break;
+			
+		case VLINK:
+			vlinkCycle_interval = true;
+			vlinkCycle_ms_preview = cycleInterval;
+			
+			customVLinkColor_HEX_preview = "ff0000";
+			vlinkCycle_step = 1;
+			cycleVLink();
 			break;
 	}		
 
@@ -476,78 +545,459 @@ function savePreview (selection) {
 
 	switch (selection) {
 		case BACKGROUND:
+			// Preview values are now the selected values (congratulations)
 			if (customBgColor_HEX_preview)
 				customBgColor_HEX = customBgColor_HEX_preview;
 
-			// Remove last preview color
-			customBgColor_HEX_preview = '';			
+			if (previewMode.get(selection) === CYCLE_MODE && bgCycle_ms_preview)
+				// Cycle mode preview
+				bgCycle_ms = bgCycle_ms_preview;
+			else
+				// A mode that is not cycle is saved (stop previous cycle)
+				bgCycle_ms = '';
+
+			if (previewMode.get(selection) === NOCOLOR_MODE)
+				customBgColor_HEX = '';
+
+			// Remove preview values
+			customBgColor_HEX_preview = bgCycle_ms_preview = '';
 			break;
 
 		case TEXT:
 			if (customTextColor_HEX_preview)
-			customTextColor_HEX = customTextColor_HEX_preview;
+				customTextColor_HEX = customTextColor_HEX_preview;
 
-			customTextColor_HEX_preview = '';	
+			if (previewMode.get(selection) === CYCLE_MODE && textCycle_ms_preview)
+				textCycle_ms = textCycle_ms_preview;
+			else 
+				textCycle_ms = '';
+
+			if (previewMode.get(selection) === NOCOLOR_MODE)
+				customTextColor_HEX = '';
+
+			customTextColor_HEX_preview = textCycle_ms_preview = '';
 			break;
 
 		case ULINK:
 			if (customULinkColor_HEX_preview)
-			customULinkColor_HEX = customULinkColor_HEX_preview;
+				customULinkColor_HEX = customULinkColor_HEX_preview;
 
-			customULinkColor_HEX_preview = '';	
+			if (previewMode.get(selection) === CYCLE_MODE && ulinkCycle_ms_preview)
+				ulinkCycle_ms = ulinkCycle_ms_preview;
+			else
+				ulinkCycle_ms = '';
+
+			if (previewMode.get(selection) === NOCOLOR_MODE)
+				customULinkColor_HEX = '';
+
+			customULinkColor_HEX_preview = ulinkCycle_ms_preview = '';
 			break;
 
 		case VLINK:
 			if (customVLinkColor_HEX_preview)
-			customVLinkColor_HEX = customVLinkColor_HEX_preview;
+				customVLinkColor_HEX = customVLinkColor_HEX_preview;
 
-			customVLinkColor_HEX_preview = '';	
+			if (previewMode.get(selection) === CYCLE_MODE && vlinkCycle_ms_preview)
+				vlinkCycle_ms = vlinkCycle_ms_preview;
+			else
+				vlinkCycle_ms = '';
+
+			if (previewMode.get(selection) === NOCOLOR_MODE)
+				customVLinkColor_HEX = '';
+
+			customVLinkColor_HEX_preview = vlinkCycle_ms_preview = '';
 			break;
-
 	}
-
 }
-
 
 function stopPreview (selection) { 
 
 	switch (selection) {
 		case BACKGROUND:
+
+			// Apply changes only if site is active
 			if (pageEnabled || itEverywhere)
-				$("html,body, .blackbg_lets_go").each(function(){
-					setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
-				});
-			customBgColor_HEX_preview = '';
+				if (customBgColor_HEX)
+					$("html,body, .blackbg_lets_go").each(function(){
+						setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
+					});
+				else
+					// No color mode: remove applied preview colors
+					$("html,body, .blackbg_lets_go").each(function(){
+						removePropertyOrSetIfStored(this, "background-color");
+					});
+
+			customBgColor_HEX_preview = bgCycle_ms_preview = '';
+			bgCycle_interval = false;
+
+			// Resume color cycle
+			if (bgCycle_ms) {
+				bgCycle_interval = true;
+				cycleBackground();
+			}
+
 			break;
 
 		case TEXT:
+			
 			if (pageEnabled || itEverywhere)
-				$("html,body, .blacktc_lets_go").each(function(){
-					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
-				});
-			customTextColor_HEX_preview = '';
+				if (customTextColor_HEX)
+					$("html,body, .blacktc_lets_go").each(function(){
+						setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
+					});
+				else 
+					$("html,body, .blackbg_pass, .blackbg_lets_go, .blacktc_lets_go").each(function(){
+						this.style.removeProperty("color");
+					});
+			
+			customTextColor_HEX_preview = textCycle_ms_preview = '';
+			textCycle_interval = false;
+				
+			if (textCycle_ms) {
+				textCycle_interval = true;
+				cycleText();
+			}
 			break;
 			
 		case ULINK:
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited)", "color", customULinkColor_HEX, true);
-			customULinkColor_HEX_preview = '';
+			if (pageEnabled || itEverywhere)
+				if (customULinkColor_HEX)
+					addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX, true);
+				else 
+					deleteStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color");
+		
+			customULinkColor_HEX_preview = ulinkCycle_ms_preview = '';
+			ulinkCycle_interval = false;
+
+			if (ulinkCycle_ms) {
+				ulinkCycle_interval = true;
+				cycleULink();
+			}
 			break;
 
 		case VLINK:
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited", "color", customVLinkColor_HEX, true);
-			customVLinkColor_HEX_preview = '';
+			if (pageEnabled || itEverywhere)
+				if (customVLinkColor_HEX)
+					addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX, true);
+				else
+					deleteStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color");
+
+			customVLinkColor_HEX_preview = vlinkCycle_ms_preview = '';
+			vlinkCycle_interval = false;
+			
+			if (vlinkCycle_ms) {
+				vlinkCycle_interval = true;
+				cycleVLink();
+			}
+			break;
+
+	}
+
+	// bgCycle_interval = textCycle_interval = ulinkCycle_interval = vlinkCycle_interval = false;
+
+}
+
+//#region RGB cycles
+
+function initializeCycles() {
+
+	if (bgCycle_ms) {
+		customBgColor_HEX = "ff0000";
+		bgCycle_step = 1;
+		cycleBackground();
+	}
+
+	if (textCycle_ms) {
+		textCycle_step = 1;
+		cycleText();
+	}
+
+	if (ulinkCycle_ms) {
+		customULinkColor_HEX = "ff0000";
+		ulinkCycle_step = 1;
+		cycleULink();
+	}
+
+	if (vlinkCycle_ms) {
+		customVLinkColor_HEX = "ff0000";
+		vlinkCycle_step = 1;
+		cycleVLink();
+	}
+	
+	// setTimeout(() => {
+	// 	if (textCycle_ms)
+	// 		cycleText(0xff0000, 1)
+	// }, bgCycle_ms ? 1000 : 1);
+
+}
+
+function resumeCycles() {
+
+	if (bgCycle_ms)
+		cycleBackground();
+	
+	if (textCycle_ms)
+		cycleText();
+
+	if (ulinkCycle_ms)
+		cycleULink();
+
+	if (vlinkCycle_ms)
+		cycleVLink();
+	
+	// setTimeout(() => {
+	// 	if (textCycle_ms)
+	// 		cycleText(0xff0000, 1)
+	// }, bgCycle_ms ? 1000 : 1);
+
+}
+
+function cycleBackground() {
+
+	if (!bgCycle_interval || (!pageEnabled && !itEverywhere))
+		return;
+
+	if (!customBgColor_HEX_preview) {
+
+		[bgCycle_step, customBgColor_HEX] = stepOperation(bgCycle_step, customBgColor_HEX.replace("#", ""));
+		customBgColor_HEX = toPaddedHexString(customBgColor_HEX.toString(16), 6);
+
+		customBgColor_HEX = `#${customBgColor_HEX}`;
+		setSiteColorForPreview(BACKGROUND, customBgColor_HEX, true);
+		
+		$("html, body, .blackbg_lets_go").each(function(){
+			setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
+		});
+
+	} else {
+
+		[bgCycle_step, customBgColor_HEX_preview] = stepOperation(bgCycle_step, customBgColor_HEX_preview.replace("#", ""));
+		customBgColor_HEX_preview = toPaddedHexString(customBgColor_HEX_preview.toString(16), 6);
+
+		customBgColor_HEX_preview = `#${customBgColor_HEX_preview}`;
+		setSiteColorForPreview(BACKGROUND, customBgColor_HEX_preview, true);
+		
+		$("html, body, .blackbg_lets_go").each(function(){
+			setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX_preview, true)
+		});
+
+	}
+	
+	bgCycle_interval = true;
+    setTimeout(() => {
+        cycleBackground();
+	}, bgCycle_ms_preview ? bgCycle_ms_preview : bgCycle_ms);
+	
+}
+
+function cycleText() {
+
+	if (!textCycle_interval || (!pageEnabled && !itEverywhere))
+		return;
+
+	if (!customTextColor_HEX_preview) {
+
+		[textCycle_step, customTextColor_HEX] = stepOperation(textCycle_step, customTextColor_HEX.replace("#", ""));
+		customTextColor_HEX = toPaddedHexString(customTextColor_HEX.toString(16), 6);
+	
+		customTextColor_HEX = `#${customTextColor_HEX}`;
+		setSiteColorForPreview(TEXT, customTextColor_HEX, true);
+		
+		$("html, body, .blacktc_lets_go").each(function(){
+			setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
+		});
+
+	} else {
+
+		[textCycle_step, customTextColor_HEX_preview] = stepOperation(textCycle_step, customTextColor_HEX_preview.replace("#", ""));
+		customTextColor_HEX_preview = toPaddedHexString(customTextColor_HEX_preview.toString(16), 6);
+	
+		customTextColor_HEX_preview = `#${customTextColor_HEX_preview}`;
+		setSiteColorForPreview(TEXT, customTextColor_HEX_preview, true);
+		
+		$("html, body, .blacktc_lets_go").each(function(){
+			setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX_preview, true)
+		});
+
+	}
+	
+	textCycle_interval = true;
+	setTimeout(() => {
+		cycleText();
+	}, textCycle_ms_preview ? textCycle_ms_preview : textCycle_ms);
+	
+}
+
+function cycleULink() {
+
+	if (!ulinkCycle_interval || (!pageEnabled && !itEverywhere))
+		return;
+
+	if (!customULinkColor_HEX_preview) {
+
+		[ulinkCycle_step, customULinkColor_HEX] = stepOperation(ulinkCycle_step, customULinkColor_HEX.replace("#", ""));
+		customULinkColor_HEX = toPaddedHexString(customULinkColor_HEX.toString(16), 6);
+		
+		customULinkColor_HEX = `#${customULinkColor_HEX}`;
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX, true);
+
+	} else {
+
+		[ulinkCycle_step, customULinkColor_HEX_preview] = stepOperation(ulinkCycle_step, customULinkColor_HEX_preview.replace("#", ""));
+		customULinkColor_HEX_preview = toPaddedHexString(customULinkColor_HEX_preview.toString(16), 6);
+		
+		customULinkColor_HEX_preview = `#${customULinkColor_HEX_preview}`;
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX_preview, true);
+
+	}
+
+    setTimeout(() => {
+        cycleULink();
+	}, ulinkCycle_ms_preview ? ulinkCycle_ms_preview : ulinkCycle_ms);
+	
+}
+
+function cycleVLink() {
+
+	if (!vlinkCycle_interval || (!pageEnabled && !itEverywhere))
+		return;
+
+	if (!customVLinkColor_HEX_preview) {
+
+		[vlinkCycle_step, customVLinkColor_HEX] = stepOperation(vlinkCycle_step, customVLinkColor_HEX.replace("#", ""));
+		customVLinkColor_HEX = toPaddedHexString(customVLinkColor_HEX.toString(16), 6);
+		customVLinkColor_HEX = `#${customVLinkColor_HEX}`;
+
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX, true);
+
+	} else {
+
+		[vlinkCycle_step, customVLinkColor_HEX_preview] = stepOperation(vlinkCycle_step, customVLinkColor_HEX_preview.replace("#", ""));
+		customVLinkColor_HEX_preview = toPaddedHexString(customVLinkColor_HEX_preview.toString(16), 6);
+		customVLinkColor_HEX_preview = `#${customVLinkColor_HEX_preview}`;
+		
+		addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX_preview, true);
+
+	}
+
+    setTimeout(() => {
+        cycleVLink();
+	}, vlinkCycle_ms_preview ? vlinkCycle_ms_preview : vlinkCycle_ms);
+	
+}
+
+function stepOperation (step, hex) {
+
+	hex = parseInt(hex, 16);
+
+    switch (step) {
+
+        case 1:
+            // From #ff0000 to #ff00ff
+            hex += 0x000001;
+            if (hex == 0xff00ff) step = 2;
+            break;
+
+        case 2:
+            // From #ff00ff to #0000ff
+            hex -= 0x010000;
+            if (hex == 0x0000ff) step = 3;
+            break;
+
+        case 3:
+            // From #0000ff to #00ffff
+            hex += 0x000100;
+            if (hex == 0x00ffff) step = 4;
+            break;
+
+        case 4:
+            // From #00ffff to #00ff00
+            hex -= 0x000001;
+            if (hex == 0x00ff00) step = 5;
+            break;
+
+        case 5:
+            // From #00ff00 to #ffff00
+            hex += 0x010000;
+            if (hex == 0xffff00) step = 6;
+            break;
+
+        case 6:
+            // From #ffff00 to #ff0000
+            hex -= 0x000100;
+            if (hex == 0xff0000) step = 1;
+            break;
+
+    }
+
+    return [step, hex];
+
+}
+
+function setCycleSpeedForPreview(selection, interval) {
+
+	switch (selection) {
+		case BACKGROUND:
+			// if (!customBgColor_HEX_preview)
+			// 	customBgColor_HEX_preview = "ff0000";
+			bgCycle_ms_preview = interval;
+			break;
+
+		case TEXT:
+			// if (!customTextColor_HEX_preview)
+			// 	customTextColor_HEX_preview = "ff0000";
+			textCycle_ms_preview = interval;
+			break;
+			
+		case ULINK:
+			// if (!customULinkColor_HEX_preview)
+			// 	customULinkColor_HEX_preview = "ff0000";
+			ulinkCycle_ms_preview = interval;
+			break;
+
+		case VLINK:
+			// if (!customVLinkColor_HEX_preview)
+			// 	customVLinkColor_HEX_preview = "ff0000";
+			vlinkCycle_ms_preview = interval;
 			break;
 
 	}
 
 }
 
+//#endregion 
 
+function noColorForPreview(selection) {
 
+	previewMode.set(selection, NOCOLOR_MODE);
 
+	switch (selection) {
+		case BACKGROUND:
+			bgCycle_interval = false;
+			if (pageEnabled || itEverywhere)
+				$("html,body, .blackbg_lets_go").each(function(){
+					removePropertyOrSetIfStored(this, "background-color");
+				});
+			break;
 
+		case TEXT:
+			textCycle_interval = false;
+			if (pageEnabled || itEverywhere)
+				$("html,body, .blackbg_pass, .blackbg_lets_go, .blacktc_lets_go").each(function(){
+					// removePropertyOrSetIfStored(this, "color");
+					this.style.removeProperty("color");
+				});
+			break;
+			
+		case ULINK:
+			ulinkCycle_interval = false;
+			deleteStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color");
+			break;
 
+		case VLINK:
+			bgCycle_interval = false;
+			deleteStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color");
+			break;
 
-
-
-
+	}
+}

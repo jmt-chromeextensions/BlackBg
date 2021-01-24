@@ -26,6 +26,72 @@ a {
   color:white;
 }
 
+/* Sites table */
+
+table {
+  padding: 0 25px 0 25px;
+  border-collapse: collapse;
+}
+
+/* Gap between header and first row (it extends to all rows 😂) */
+table > * td {
+  padding-top: 10px;
+  font-size: small;
+}
+
+/* Not show entire URLs or domains if they're too long (or a just a bit long) */
+td {
+  max-width: 100px;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Domain column */
+tr > th:nth-child(1) {
+  width: 115px;
+}
+
+/* URL column */
+tr > th:nth-child(2) {
+  width: 200px;
+}
+
+/* Enable column */
+tr > th:nth-child(3) {
+  width: 90px;
+  /* color: #aaffff; */
+}
+
+/* Empty column 
+tr > th:nth-child(4) {
+  width: 25px;
+} */
+
+/* Colors columns */
+tr > th:nth-child(n+4) {
+  width: 65px;
+}
+
+/* Delete column */
+tr > th:nth-child(8) {
+  /* color: #ffffbb; */
+}
+
+.header_row {
+  border-bottom: 1px solid #888888;
+}
+
+.header_row {
+  font-size: small;
+}
+
+/* Highlight hovered row's URL and domain */
+tbody > tr:hover, tbody > tr:hover > * > a {
+  color: #4DDBFF !important;
+}
+
 /* Popup elements */
 
 header input[type="checkbox"] {
@@ -46,6 +112,18 @@ h1
   opacity: 25%;
 }
 
+input[type="color"] {
+  height: 30px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.input_extra_mode {
+  padding: 0 6px 0 6px;
+  border-radius: 4px;
+  background-color: #efefef;
+}
+
 .saveBtn {
 	margin-top: 15px;
 }
@@ -54,11 +132,11 @@ h1
   position: fixed;
   z-index: 1;
   top: 19%;
-  right: 5%;
+  right: 25%;
   width: 302.39px;;
   height: 74%;
   /* overflow: auto; */
-  background-color: rgb(142, 142, 142);
+  background-color: rgb(94, 94, 94);
   border-radius: 15px;
   /* text-align: center; */
 }
@@ -224,11 +302,12 @@ background-color: #555;
 
 .semi_transparent {
   opacity: 0.5;
+  pointer-events: none;
 }
 
 /* Page list div */
 
-.saved_page {
+/* .saved_page {
 	display: flex;
 	align-items: center;
 	margin-bottom: 10px;
@@ -247,7 +326,7 @@ background-color: #555;
 
 .saved_page label {
 	margin-right: 15px;
-}
+} */
 
 .pointer_events_none {
   pointer-events: none;

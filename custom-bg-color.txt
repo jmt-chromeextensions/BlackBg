@@ -13,5 +13,13 @@ Cambiar guiones por otra cosa porque los dominios pueden tener guiones
 Botones para reemplazar colores y copiar color
 Mostrar color que ha salido random
 Poder guardar color random
+Quitar opción de cycle en content-script al borrar desde pop-up
+Tooltip de velocidad en cycle_speed
+Ajustar query al mandar mensajes desde pop-up
+Colores RGB raros
+Traducir textos
+Selección de it_everywhere
+Investigar por qué el ciclo va muy lento al principio pero luego se activa
+Investigar caso de las barras de VOD de twitch con copyright que no se ve con NOCOLOR
 
 #03152E

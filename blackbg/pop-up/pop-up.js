@@ -1,21 +1,5 @@
 // Manage interaction with the popup and the selected pages list.
 
-const SAVED_PAGE_ELEM_TEMPLATE =
-`<div class="saved_page" id="page_XXX">
-    <a href="http://YYY" class="page_name">YYY</a>
-    <div class="right">
-        <label class="switch" id="lbl_XXX"><input type="checkbox" id="switch_XXX" data-domain="ZZZ">
-        <span class="slider round"></span></label>
-
-        <input id="color_XXX" type="color" class="input_color_background" data-domain="ZZZ">
-        <input id="color_text_XXX" type="color" class="input_color_text" data-domain="ZZZ">
-        <input id="color_ulink_XXX" type="color" class="input_color_ulink" data-domain="ZZZ">
-        <input id="color_vlink_XXX" type="color" class="input_color_vlink" data-domain="ZZZ">
-
-        <input type="image" src="../icons/delete.png" id="remove_XXX">
-    </div>
-</div>`
-
 const ENABLED = "enabled";
 const BACKGROUND = "background";
 const TEXT = "text";
@@ -26,6 +10,34 @@ const COLOR_MODE = "color";
 const RANDOM_MODE = "random";
 const CYCLE_MODE = "cycle";
 const NOCOLOR_MODE = "nocolor";
+
+const SAVED_PAGE_DIV_TEMPLATE =
+`<div class="saved_page" id="page_SITE_WITH_FORMAT">
+    <a href="http://SITE_NO_WWW" class="page_name">SITE_NO_WWW</a>
+    <div class="right">
+        <label class="switch" id="lbl_SITE_WITH_FORMAT"><input type="checkbox" id="switch_SITE_WITH_FORMAT" data-domain="SITE_NO_WWW">
+        <span class="slider round"></span></label>
+
+        <input id="color_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${BACKGROUND}>
+        <input id="color_text_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${TEXT}>
+        <input id="color_ulink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${ULINK}>
+        <input id="color_vlink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${VLINK}>
+
+        <input type="image" src="../icons/delete.png" id="remove_SITE_WITH_FORMAT">
+    </div>
+</div>`
+
+const SAVED_PAGE_TR_TEMPLATE = 
+`<tr class="saved_page" id="page_SITE_WITH_FORMAT">
+    <td><a href="http://SITE_NO_WWW" class="page_name">SITE_NO_WWW</a></td>
+    <td>Domain</td>
+    <td><label class="switch" id="lbl_SITE_WITH_FORMAT"><input type="checkbox" id="switch_SITE_WITH_FORMAT" data-domain="SITE_NO_WWW"><span class="slider round"></span></label></td>
+    <td><input id="color_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${BACKGROUND}></td>
+    <td><input id="color_text_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${TEXT}></td>
+    <td><input id="color_ulink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${ULINK}></td>
+    <td><input id="color_vlink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${VLINK}></td>
+    <td><input type="image" src="../icons/delete.png" id="remove_SITE_WITH_FORMAT"></td>
+</tr>`
 
 const DEFAULT_BACKGROUND = { mode: COLOR_MODE, value: "000000" }
 const DEFAULT_TEXT = { mode: COLOR_MODE, value: "FFFFFF" }
@@ -72,7 +84,7 @@ $(document).ready(function () {
     }).on('move.spectrum', function(e, color) {
         if (!preview_color_just_set) {
             preview_color_just_set = true;
-            siteColorPreview(color.toHexString());
+            if (color) siteColorPreview(color.toHexString());
             setTimeout(() => {
                 preview_color_just_set = false;
             }, 100);
@@ -80,6 +92,12 @@ $(document).ready(function () {
     });
 
     $(".sp-input").css("color", "white");
+
+    // Hide this thing
+    $(".sp-colorize-container.sp-add-on").css("visibility", "hidden");
+
+    // Change clear icon
+    $(".sp-clear-display").css("background-image", NO_COLOR_ICON);
 
     // Remove accept/cancel buttons
     $(".sp-button-container.sp-cf").remove();
@@ -108,13 +126,16 @@ $(document).ready(function () {
 
     // Activate different modes
     $("#color_selector .cycle_div").click(rgbCyclePreview);
+    $(".sp-clear-display").click(noColorPreview).attr("data-mode", NOCOLOR_MODE);
+
+
 
 // #endregion
 
     // Hide palette when the user clicks out of it
     $("body").click(function(event) {
         if ($("#color_selector").is(":visible"))
-            if ($("#color_selector, .sp_container").find(event.target).length == 0 && !$(event.target).is($("#color_selector, .sp_container, input[class^='input_color_']"))) {
+            if ($("#color_selector, .sp_container").find(event.target).length == 0 && !$(event.target).is($("#color_selector, .sp_container, input[data-selection]"))) {
                 closePaletteModal();
         }
     });
@@ -155,7 +176,7 @@ $(document).ready(function () {
 });
 
 function addNewSelectedPage() {
-    // Get current tab domain, register it with chrome.storage and send message to all tabs to notify the addition
+    // Get current tab's domain, register it with chrome.storage and send message to all tabs to notify the addition
     chrome.tabs.query({ active: true, currentWindow: true, 'windowId': chrome.windows.WINDOW_ID_CURRENT }, function (tabs) {
         let domain = new URL(tabs[0].url).hostname;
 
@@ -166,8 +187,8 @@ function addNewSelectedPage() {
             sitesEnabled.push([domain, "enabled"].join("/blv_ck_bg/"));
             sitesBackground.push([domain, DEFAULT_BACKGROUND.mode, DEFAULT_BACKGROUND.value].join("/blv_ck_bg/"));
             sitesText.push([domain, DEFAULT_TEXT.mode, DEFAULT_TEXT.value].join("/blv_ck_bg/"));
-            sitesULinks.push([domain, DEFAULT_ULINK.mode, DEFAULT_ULINK.value].join("/blv_ck_bg/"));
-            sitesVLinks.push([domain, DEFAULT_VLINK.mode, DEFAULT_VLINK.value].join("/blv_ck_bg/"));
+            sitesULinks.push([domain, DEFAULT_ULINK.mode].join("/blv_ck_bg/"));
+            sitesVLinks.push([domain, DEFAULT_VLINK.mode].join("/blv_ck_bg/"));
 
             // Domains alphabetically ordered
             [sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks].map(function (siteList) {
@@ -197,11 +218,13 @@ function openSettingsTab() {
     }
 }
 
-function openPaletteModal(event) {
+function openPaletteModal(event, input) {
 
-    // $("*").addClass("semi_transparent");
-    // $("#color_modal").find("*").removeClass("semi_transparent");
     event.preventDefault();
+
+    let domain = $(input).attr("data-domain").replaceAll("-", ".");
+    let selection = $(input).attr("data-selection");
+    let mode = $(input).attr("data-mode");
 
     // Increase body's height so the modal can fit in
     let current_body_height = parseFloat($("body").css("height").replace("px", ""));
@@ -211,28 +234,34 @@ function openPaletteModal(event) {
     }
 
     // Indicate which color is being selected
-    $(this).attr("data-palette", "open");
+    $(input).attr("data-palette", "open");
 
     // Show what selection is being made in pop-up
-    let domain = event.data.domain.replaceAll("-", ".");
     $(".popup_title h2").text(domain).attr("href", `http://${domain}`);
-    $(".popup_title h3").text(`Choose a color for ${event.data.selection}.`);
+    $(".popup_title h3").text(`Choose a color for ${selection}.`);
 
     // Set palette to site's custom color
-    if ($(this).val())
-        $("#showInput").spectrum("set", $(this).val());
+    if ($(input).val() && mode === COLOR_MODE)
+        $("#showInput").spectrum("set", $(input).val());
+    else if (mode === NOCOLOR_MODE)
+        $(".sp-input").val("No selected color.")
+    else if (mode === CYCLE_MODE)
+        $("#cycle_speed").val($(input).attr("data-cycle_speed"));
+
+    // Add semi-transparency to everything outside the pop-up
+     $("#content, header").addClass("semi_transparent");
 
     $("#color_selector").show();
     not_hide_palette = true;
 
-    visualizeSelectedMode(event.data.mode);
+    visualizeSelectedMode(mode);
 
     setTimeout(() => {
+        // Adjust palette's position
         $("#showInput").click();
 
-        // Adjust palette's position
-        let topDiff = parseInt($(".sp-container").css("top").replace("px", "")) - $("body")[0].scrollTop;
-        $(".sp-container").css("position", "fixed").css("top", topDiff);
+        // let topDiff = parseInt($(".sp-container").css("top").replace("px", "")) - $("body")[0].scrollTop;
+        // $(".sp-container").css("position", "fixed").css("top", topDiff);
 
     }, 1);
 
@@ -248,14 +277,16 @@ function closePaletteModal(saveChanges) {
     }
 
     // Send message to stop preview (apply changes in webpage if accept button has been pressed)
-    let domain = $("input[data-palette='open']").attr("data-domain");
-    let selection = $("input[data-palette='open']").attr("class").substring(12); // input_color_{selection}
+    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
+    let selection = $("input[data-palette='open']").attr("data-selection");
 
     sendMessageToContentScripts(saveChanges ? "savePreview" : "stopPreview", domain, selection);
 
     // Hide palette and modal
+    cycleSelected = false;
     $("input[data-palette='open']").removeAttr("data-palette");
     $("#showInput").click();
+    $(".semi_transparent").removeClass("semi_transparent");
     $("#color_selector").hide();
 }
 
@@ -272,37 +303,37 @@ function applyOnAllPages() {
 
 function addSelectedPageToPopup(domain, enabled, background, text, ulink, vlink) {
 
-    let new_saved_page_elem_html = SAVED_PAGE_ELEM_TEMPLATE
-    .replaceAll("XXX", domain.replace("www.", "").replaceAll('.', '-'))
-    .replaceAll("YYY", domain.replace("www.", ""))
-    .replaceAll("ZZZ", domain);
+    let new_saved_page_elem_html = SAVED_PAGE_TR_TEMPLATE
+    .replaceAll("SITE_WITH_FORMAT", domain.replace("www.", "").replaceAll('.', '-'))
+    .replaceAll("SITE_NO_WWW", domain.replace("www.", ""));
+    // .replaceAll("SITE_RAW", domain);
 
     let position_in_list = sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes (domain.replace("www.", ""))));
     domain = domain.replace("www.", "").replaceAll('.', '-');
 
     if (position_in_list == 0)
-        $("#saved_pages").prepend(new_saved_page_elem_html);
+        $("#saved_sites").append(new_saved_page_elem_html);
     else
         $(".saved_page").eq(position_in_list - 1).after(new_saved_page_elem_html);
 
     if (enabled)
         $(`#switch_${domain}`)[0].checked = true;
 
-    if (background && background.value)
-        $(`#color_${domain}`).val(`#${background.value}`);
-    // else
-    //     $(`#color_${domain}`).val('#000000'); // Black by default
+    // Assign color values and modes to inputs (values may be null)
+    $(`#color_${domain}`).val(`#${background.value}`).attr("data-mode", background.mode);
+    $(`#color_text_${domain}`).val(`#${text.value}`).attr("data-mode", text.mode);
+    $(`#color_ulink_${domain}`).val(`#${ulink.value}`).attr("data-mode", ulink.mode);
+    $(`#color_vlink_${domain}`).val(`#${vlink.value}`).attr("data-mode", vlink.mode);
 
-    if (text && text.value)
-        $(`#color_text_${domain}`).val(`#${text.value}`);
-    // else
-    //     $(`#color_text_${domain}`).val('#FFFFFF'); // White by default
+    // Modify input in case of selected extra mode (random, cycle, no color)
+    $(`#color_${domain}, #color_text_${domain}, #color_ulink_${domain}, #color_vlink_${domain}`).each(function () { 
+        modifyInputDependingOnMode($(this)); 
+    })
 
-    if (ulink && ulink.value)
-        $(`#color_ulink_${domain}`).val(`#${ulink.value}`);
-
-    if (vlink && vlink.value)
-        $(`#color_vlink_${domain}`).val(`#${vlink.value}`);
+    if (background.mode === CYCLE_MODE) $(`#color_${domain}`).attr("data-cycle_speed", background.value);
+    if (text.mode === CYCLE_MODE) $(`#color_text_${domain}`).attr("data-cycle_speed", text.value);
+    if (ulink.mode === CYCLE_MODE) $(`#color_ulink_${domain}`).attr("data-cycle_speed", ulink.value);
+    if (vlink.mode === CYCLE_MODE) $(`#color_vlink_${domain}`).attr("data-cycle_speed", vlink.value);
 
     // Open site in new tab when URL is clicked
     $(`#page_${domain} .page_name`).click(openSiteInNewTab);
@@ -310,14 +341,35 @@ function addSelectedPageToPopup(domain, enabled, background, text, ulink, vlink)
     // Save enabled/disabled option for selected pages on switch interaction
     $(`#switch_${domain}`).bind('change', (delayFunction(enableDisablePage, 1)));
 
-    // Set site's custom background color
-    $(`#color_${domain}`).bind('click', { domain: domain, selection:BACKGROUND, mode: background.mode }, openPaletteModal);
-    $(`#color_text_${domain}`).bind('click', { domain: domain, selection:TEXT, mode: text.mode }, openPaletteModal);
-    $(`#color_ulink_${domain}`).bind('click', { domain: domain, selection:ULINK, mode: ulink.mode }, openPaletteModal);
-    $(`#color_vlink_${domain}`).bind('click', { domain: domain, selection:VLINK, mode: vlink.mode }, openPaletteModal);
+    // Open palette when any of the inputs is clicked
+    
+    // $(`#color_${domain}, #color_text_${domain}, #color_ulink_${domain}, #color_vlink_${domain}`).click(openPaletteModal);
+    $(`#color_${domain}, #color_text_${domain}, #color_ulink_${domain}, #color_vlink_${domain}`).click(function (event) {
+        openPaletteModal(event, this);
+    });
 
     // Delete selected page from list (popup and storage; asks for confirmation)
     $(`#remove_${domain}`).bind('click', { enabled: enabled }, deleteConfirmOptions);
+}
+
+function modifyInputDependingOnMode (input) {
+    switch (input.attr("data-mode")) {
+        case COLOR_MODE:
+            input.attr("type", "color").removeAttr("src").removeClass("input_extra_mode");
+            break;
+            
+        case RANDOM_MODE:
+            input.attr("type", "image").attr("src", "../icons/random_2.png").addClass("input_extra_mode");
+            break;
+    
+        case CYCLE_MODE:
+            input.attr("type", "image").attr("src", "../icons/cycle_2.png").addClass("input_extra_mode");
+            break;
+
+        case NOCOLOR_MODE:
+            input.attr("type", "image").attr("src", "../icons/nocolor_2.png").addClass("input_extra_mode");
+            break;
+    }
 }
 
 function openSiteInNewTab() {
@@ -425,10 +477,10 @@ function saveSites(type) {
 
 }
 
-function sendMessageToContentScripts(action, domain, selection, color) {
+function sendMessageToContentScripts(action, domain, selection, value) {
     chrome.tabs.query({}, function (tabs) {
         for (var i = 0, length = tabs.length; i < length; i++) {
-            chrome.tabs.sendMessage(tabs[i].id, { domain: domain, action: action, selection:selection, color: color  }, function () { });
+            chrome.tabs.sendMessage(tabs[i].id, { domain: domain, action: action, selection:selection, value: value  }, function () { });
         }
     });
 }

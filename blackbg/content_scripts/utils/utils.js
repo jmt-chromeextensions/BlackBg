@@ -28,8 +28,16 @@ function delayFunction (callback, ms) {
     };
 }
 
-function getRandomHexColor () {
+function getPaddedRandomHexColor () {
+    let hex = ((1<<24)*Math.random()|0).toString(16);
+    if (hex.length < 6)
+        hex = "0".repeat(6 - hex.length) + hex;
     return "#"+((1<<24)*Math.random()|0).toString(16);
+}
+
+function toPaddedHexString(num, len) {
+    str = num.toString(16);
+    return "0".repeat(len - str.length) + str;
 }
 
 function addOrUpdateStylesheetRule(sheetSelector, selectorText, property, value, important) {
