@@ -44,9 +44,10 @@ function toPaddedHexString(num, len) {
 // #endregion
 
 // #region Modal's elements effects
-var cycle_interval = 10;
+var cycle_interval = 1;
 
 function initializeCycleIcon() {
+    
     cycleIcon($(".cycle_div > * path").eq(1), 0xff0000, 1);
 
     setTimeout(() => {
@@ -121,6 +122,12 @@ function paintRandomIcon(e) {
     return rndColor;
 }
 
+function calculateOptimalCycleRateAndSetInputTitle () {
+    let estimatedSeconds = (255 * 6 * parseInt($("#cycle_speed").val())) / 1000;
+    let nearestTen = Math.ceil(estimatedSeconds / 10) * 10;
+    $("#cycle_speed").attr("title", `Optimal perfomance: 1 cycle in ${nearestTen} seconds.`);
+}
+
 // #endregion
 
 // #region Site color changes, save modifications, preview
@@ -131,111 +138,216 @@ function getSelectionAndSetIt() {
 
     let input = $("input[data-palette='open']");
 
-    let domain = input.attr("data-domain").replaceAll("-", ".");
+    let site = input.attr("data-site");
     let color = $(".sp-input").val().replace('#', '');
     let cycleInterval = $("#cycle_speed").val();
 
     let selection = input.attr("data-selection");
-    let index = getPageIndexInArrayByDomain(domain, selection);
     let mode = $(".mode_selected").attr("data-mode");
 
-    switch (selection) {
+    if (site !== "all") {
 
-        case BACKGROUND:
+        let index = getSiteIndex(site, selection);
 
-            switch (mode) {
-                case COLOR_MODE:
-                    sitesBackground[index] = [domain, COLOR_MODE, color].join("/blv_ck_bg/");
-                    break;
-                    
-                case RANDOM_MODE:
-                    sitesBackground[index] = [domain, RANDOM_MODE].join("/blv_ck_bg/");
-                    break;
-
-                case CYCLE_MODE:
-                    sitesBackground[index] = [domain, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                    break;
-
-                case NOCOLOR_MODE:
-                    sitesBackground[index] = [domain, NOCOLOR_MODE].join("/blv_ck_bg/");
-                    break;
-            }
-            break;
-
-        case TEXT:
-
-            switch (mode) {
-                case COLOR_MODE:
-                    sitesText[index] = [domain, COLOR_MODE, color].join("/blv_ck_bg/");
-                    break;
-                    
-                case RANDOM_MODE:
-                    sitesText[index] = [domain, RANDOM_MODE].join("/blv_ck_bg/");
-                    break;
-
-                case CYCLE_MODE:
-                    sitesText[index] = [domain, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                    break;
-
-                case NOCOLOR_MODE:
-                    sitesText[index] = [domain, NOCOLOR_MODE].join("/blv_ck_bg/");
-                    break;
-            }
-            break;
-
-        case ULINK:
-
-            switch (mode) {
-                case COLOR_MODE:
-                    sitesULinks[index] = [domain, COLOR_MODE, color].join("/blv_ck_bg/");
-                    break;
-                    
-                case RANDOM_MODE:
-                    sitesULinks[index] = [domain, RANDOM_MODE].join("/blv_ck_bg/");
-                    break;
-
-                case CYCLE_MODE:
-                    sitesULinks[index] = [domain, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                    break;
-
-                case NOCOLOR_MODE:
-                    sitesULinks[index] = [domain, NOCOLOR_MODE].join("/blv_ck_bg/");
-                    break;
-            }
-            break;
-
-        case VLINK:
-
-            switch (mode) {
-                case COLOR_MODE:
-                    sitesVLinks[index] = [domain, COLOR_MODE, color].join("/blv_ck_bg/");
-                    break;
-                    
-                case RANDOM_MODE:
-                    sitesVLinks[index] = [domain, RANDOM_MODE].join("/blv_ck_bg/");
-                    break;
-
-                case CYCLE_MODE:
-                    sitesVLinks[index] = [domain, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                    break;
+        switch (selection) {
     
-                case NOCOLOR_MODE:
-                    sitesVLinks[index] = [domain, NOCOLOR_MODE].join("/blv_ck_bg/");
-                    break;
-            }
-            break;
+            case BACKGROUND:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesBackground[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesBackground[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesBackground[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesBackground[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+    
+                break;
+    
+            case TEXT:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesText[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesText[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesText[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesText[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+            case ULINK:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesULinks[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesULinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesULinks[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesULinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+            case VLINK:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesVLinks[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesVLinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesVLinks[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+        
+                    case NOCOLOR_MODE:
+                        sitesVLinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+        }
+    } 
+    else {
+
+        let allSitesSettings = allSites.split(HAPPY_FACE_SEPARATOR);
+        let newSection;
+
+        switch (selection) {
+    
+            case BACKGROUND:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        newSection = [COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        newSection = [RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        newSection = [CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        newSection = [NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+
+                allSites = [allSitesSettings[0], newSection, allSitesSettings[2], allSitesSettings[3], allSitesSettings[4]];
+                break;
+    
+            case TEXT:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesText[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesText[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesText[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesText[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+            case ULINK:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesULinks[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesULinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesULinks[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesULinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+            case VLINK:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesVLinks[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesVLinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesVLinks[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                        break;
+        
+                    case NOCOLOR_MODE:
+                        sitesVLinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+        }
 
     }
 
+    // Set input's data or icon
     if (mode === COLOR_MODE)
         input.val(`#${color}`);
-    else if (mode === CYCLE_MODE)
+    else if (mode === CYCLE_MODE) {
+        input.val(cycleInterval);
         input.attr("data-cycle_speed", cycleInterval);
+    }
         
     input.attr("data-mode", mode);
+
     modifyInputDependingOnMode(input);
 
-    saveSites(selection);
+    saveSites(selection, site === "all");
     closePaletteModal(true);
 }
 
@@ -243,10 +355,10 @@ function siteColorPreview(color) {
 
     visualizeSelectedMode(COLOR_MODE);
 
-    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
+    let site = $("input[data-palette='open']").attr("data-site");
     let selection = $("input[data-palette='open']").attr("data-selection");
 
-    sendMessageToContentScripts("setSiteColorForPreview", domain, selection, color);
+    sendMessageToContentScripts("setSiteColorForPreview", site, selection, color);
 
 }
 
@@ -254,11 +366,15 @@ function randomColorPreview(color) {
 
     visualizeSelectedMode(RANDOM_MODE, color);
 
-    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
+    let site = $("input[data-palette='open']").attr("data-site");
     let selection = $("input[data-palette='open']").attr("data-selection");
 
-    sendMessageToContentScripts("setSiteColorForPreview", domain, selection, color);
+    sendMessageToContentScripts("setSiteColorForPreview", site, selection, color);
 
+}
+
+function setRandomColorAsSelected_Preview () {
+    siteColorPreview($(".sp-input").val());
 }
 
 function rgbCyclePreview() {
@@ -267,11 +383,11 @@ function rgbCyclePreview() {
 
     if (!cycleSelected) {
 
-        let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
+        let site = $("input[data-palette='open']").attr("data-site");
         let selection = $("input[data-palette='open']").attr("data-selection");
         let cycleInterval = $("#cycle_speed").val();
         
-        sendMessageToContentScripts("startCycleForPreview", domain, selection, cycleInterval);
+        sendMessageToContentScripts("startCycleForPreview", site, selection, cycleInterval);
         cycleSelected = true;
 
     }
@@ -282,11 +398,13 @@ function cycleSpeedPreview() {
 
     // Cycle icon
     cycle_interval = this.value;
-
-    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
+    
+    let site = $("input[data-palette='open']").attr("data-site");
     let selection = $("input[data-palette='open']").attr("data-selection");
     
-    sendMessageToContentScripts("setCycleSpeedForPreview", domain, selection, cycle_interval);
+    calculateOptimalCycleRateAndSetInputTitle();
+    
+    sendMessageToContentScripts("setCycleSpeedForPreview", site, selection, cycle_interval);
 
 }
 
@@ -294,14 +412,16 @@ function noColorPreview() {
 
     visualizeSelectedMode(NOCOLOR_MODE);
 
-    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
+    let site = $("input[data-palette='open']").attr("data-site");
     let selection = $("input[data-palette='open']").attr("data-selection");
     
-    sendMessageToContentScripts("noColorForPreview", domain, selection);
+    sendMessageToContentScripts("noColorForPreview", site, selection);
 
 }
 
 function visualizeSelectedMode(mode, color) {
+
+    $("#save_randomColor").hide();
 
     switch (mode) {
 

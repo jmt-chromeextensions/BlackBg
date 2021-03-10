@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
         chrome.tabs.query({ url: ["http://*/*", "https://*/*"] }, function (tabs) {
             console.log(tabs);
             for (var i = 0, length = tabs.length; i < length; i++) {
-                executeScripts(tabs[i].id, ["jquery/jquery-3.4.1.min.js", "content_scripts/utils/utils.js", "content_scripts/set_bg_color.js"]);
+                executeScripts(tabs[i].id, ["jquery/jquery-3.4.1.min.js", "jquery/jquery-ui.min.js", "content_scripts/utils/utils.js", "content_scripts/set_bg_color.js"]);
             }
         });
     }

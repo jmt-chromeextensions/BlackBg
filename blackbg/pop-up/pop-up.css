@@ -1,3 +1,16 @@
+/* Utilities */
+
+.text_ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.semi_transparent {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 /* General */
 
 *:not(.modal)
@@ -26,6 +39,30 @@ a {
   color:white;
 }
 
+#content {
+  padding: 5px;
+}
+
+/* Tools */
+
+.tools {
+  position: relative;
+  top: 10px;
+}
+
+.tools > div {
+  display: inline;
+}
+
+.right_tools {
+  margin-left: 50px;
+}
+
+.copy_guide_text {
+  position: relative;
+  font-size: 17px;
+}
+
 /* Sites table */
 
 table {
@@ -43,9 +80,16 @@ table > * td {
 td {
   max-width: 100px;
   overflow: hidden;
-  text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+tr > td:nth-child(1) {
+  text-align: left;
+}
+
+tr > td:nth-child(n+2) {
+  text-align: center;
 }
 
 /* Domain column */
@@ -80,19 +124,43 @@ tr > th:nth-child(8) {
 }
 
 .header_row {
-  border-bottom: 1px solid #888888;
+  border-bottom: 1.5px solid #c1c1c1;
 }
 
 .header_row {
   font-size: small;
 }
 
+.all_row > td {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #8888;
+  text-align: center !important;
+  font-style: italic;
+}
+
+.all_row_extended {
+  padding-bottom: 45px !important;
+}  
+
 /* Highlight hovered row's URL and domain */
 tbody > tr:hover, tbody > tr:hover > * > a {
   color: #4DDBFF !important;
 }
 
-/* Popup elements */
+/* tbody:hover > td {
+  opacity: 1 !important;
+} */
+
+/* Sites saved by URL's domain are colored in gray and slightly moved to right */ 
+.url_saved_domain {
+  padding-left: 10px;
+}
+
+.url_saved_domain > a {
+  color: lightgray;
+}
+
+/* Palette pop-pup elements */
 
 header input[type="checkbox"] {
   display: none;
@@ -105,7 +173,8 @@ header label {
 h1
 {
   text-align: center;
-	font-family:"Garamond";
+	/* font-family:"Garamond"; */
+	font-family:"Segoe UI", Tahoma, sans-serif;
 }
 
 .opacity_25 {
@@ -116,6 +185,15 @@ input[type="color"] {
   height: 30px;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.selected_from_copy {
+  background-color: #4DFF6B !important;
+  cursor: inherit !important; 
+}
+
+.selected_to_copy {
+  background-color: #4DDBFF !important;
 }
 
 .input_extra_mode {
@@ -129,16 +207,49 @@ input[type="color"] {
 }
 
 .modal {
+  display: none;
   position: fixed;
   z-index: 1;
   top: 19%;
   right: 25%;
-  width: 302.39px;;
+  width: 370.39px;
   height: 74%;
   /* overflow: auto; */
   background-color: rgb(94, 94, 94);
   border-radius: 15px;
   /* text-align: center; */
+}
+
+/* Delete confirmation pop-up */
+
+.modal_delete {
+  top: 30% !important;
+  right: 25%;
+  overflow-y: auto;
+}
+
+.modal_delete_domainAndUrl {
+  height: 37% !important;
+}
+
+.modal_delete_onlyDomain {
+  height: 30% !important;
+}
+
+.modal_delete > * p, .modal_delete > p {
+  margin: 15px;
+  padding-bottom: 5px;
+  font-size: medium;
+  word-break: break-all;
+}
+
+.modal_delete > header > p {
+  border-bottom: 1px solid white;
+  word-break: normal;
+}
+
+.modal_delete .box_buttons {
+  text-align: center;
 }
 
 /* Spectrum */
@@ -184,59 +295,27 @@ input[type="color"] {
   cursor: pointer;
 }
 
+.box_buttons > input:nth-child(1) {
+  margin-right:15px;
+}
+
 /* Good CSS practices */
 
 .random_div {
-  margin: 25px 0 0 250px;
+  margin: 25px 0 0 300px;
 }
 
 .cycle_div {
-  margin: 18px 0 0 250px;
+  margin: 18px 0 0 300px;
 }
 
 .cycle_speed_div {
-  margin: 55px 0 0 215px;
+  margin: 55px 0 0 265px;
 }
 
 .acccan_div {
-  margin: 110px 0 0 125px;
+  margin: 110px 0 0 150px;
 }
-
-/* @keyframes rotate {
-  from {
-    -webkit-transform: rotate(0deg);
-    -moz-transform-origin: 25px 25px;
-    -ms-transform-origin:  25px 25px;
-    -o-transform-origin: 25px 25px;
-    -webkit-transform-origin:  25px 25px;
-    transform-origin: 25px 25px;
-  }
-  to { 
-    -webkit-transform: rotate(360deg);
-    -webkit-transform-origin: 1px 1px;
-  }
-}
-
-.cycle_div path:nth-child(2) {
-  -webkit-animation-name:             rotate; 
-  animation-name:                     rotate; 
-  -webkit-animation-duration:         1s; 
-  animation-duration:                 1s; 
-  -webkit-animation-iteration-count:  infinite;
-  animation-iteration-count:          infinite;
-  -webkit-animation-timing-function:  linear;
-  animation-timing-function:          linear;
-} */
-/* 
-input[type=range][orient=vertical]
-{
-  color: white;
-  background-color: white;
-  -webkit-appearance: none; 
-  width: 8px;
-  height: 90px;
-  margin: 10px;
-}  */
 
 /*customised range*/ input[type="range"].range
 {
@@ -298,35 +377,17 @@ background-color: #555;
 .palette_bgColor {
   background: rgb(142, 142, 142) !important;
   color: white;
+  left: 250px !important;
 }
 
-.semi_transparent {
-  opacity: 0.5;
-  pointer-events: none;
+/* Palette selected color's code */
+.palette_bgColor * .sp-input {
+  font-size: larger !important;
 }
 
-/* Page list div */
-
-/* .saved_page {
-	display: flex;
-	align-items: center;
-	margin-bottom: 10px;
+.palette_bgColor * .sp-input-container.sp-cf {
+  height: 35px;
 }
-
-.saved_page .page_name {
-  margin-right: 10px;
-  font-size: 14;
-}
-
-.saved_page .right {
-	order: 2;
-    margin-left: auto;
-    display: flex;
-}
-
-.saved_page label {
-	margin-right: 15px;
-} */
 
 .pointer_events_none {
   pointer-events: none;
@@ -380,9 +441,39 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+/* Tooltip https://www.w3schools.com/css/tryit.asp?filename=trycss_tooltip_arrow_top */
+
+.tooltiptext {
+  visibility: hidden;
+  background-color: white;
+  color: black;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 3px;
+  font-size: 12.5px;
+  position: relative;
+  bottom: -114px;
+  left: 52px;
+}
+
+.tooltiptext::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent white transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
 
 /* Rounded sliders */
@@ -394,38 +485,25 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-/* Grid */
+/* Momentary color change */
 
-/* * {
-  box-sizing: border-box;
+.highlight_3s_blue {
+    animation:myfirst 3s 1;
+    -webkit-animation:myfirst 3s 1; /* Safari and Chrome */
 }
 
-.header {
-  border: 1px solid red;
-  padding: 15px;
+@keyframes myfirst
+{
+    0%      {color:white;}
+    25%     {color:#4DDBFF;}
+    75%     {color:#4DDBFF;}
+    100%    {color:white;}
 }
 
-.row::after {
-  content: "";
-  clear: both;
-  display: table;
+@-webkit-keyframes myfirst /* Safari and Chrome */
+{
+    0%      {color:white;}
+    25%     {color:#4DDBFF;}
+    75%     {color:#4DDBFF;}
+    100%    {color:white;}
 }
-
-[class*="col-"] {
-  float: left;
-  padding: 5px;
-  border-right: 1px solid white;
-}
-
-.col-1 {width: 8.33%;}
-.col-2 {width: 16.66%;}
-.col-3 {width: 25%;}
-.col-4 {width: 33.33%;}
-.col-5 {width: 41.66%;}
-.col-6 {width: 50%;}
-.col-7 {width: 58.33%;}
-.col-8 {width: 66.66%;}
-.col-9 {width: 75%;}
-.col-10 {width: 83.33%;}
-.col-11 {width: 91.66%;}
-.col-12 {width: 100%;} */

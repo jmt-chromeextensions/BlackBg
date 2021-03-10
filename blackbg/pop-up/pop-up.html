@@ -3,6 +3,7 @@
 <head>
 	<link rel="stylesheet" type="text/css" href="pop-up.css">
 	<script src="../jquery/jquery-3.4.1.min.js"></script>
+	<script src="../jquery/jquery-ui.min.js"></script>
 	<script src="../content_scripts/utils/utils.js"></script>
 	<script src="pop-up.js"></script>
 	<script src="colors.js"></script>
@@ -17,11 +18,29 @@
 <header>
     <h1 data-localize="text">__MSG_lbl_blacklist<h1>
 	<hr>
-	
-	<input id="btn_add" type="image" src="../icons/add.png" data-localize="title" title="__MSG_title_add_button"/>
 
-	<input id="btn_all" type="checkbox"/>
-	<label for="btn_all" class="opacity_25" data-localize="title" title="__MSG_title_all_button"><img src="../icons/all.png" /></label>	
+	<div class="tools">
+
+		<div class="left_tools">
+			<input id="btn_add_domain" type="image" src="../icons/add.png" data-localize="title" title="__MSG_title_add_button"/>
+			<input id="btn_add_url" type="image" src="../icons/add_url2.png" data-localize="title" title="__MSG_title_add_button"/>
+			<!-- <input id="btn_all" type="checkbox"/>
+				<label for="btn_all" class="opacity_25" data-localize="title" title="__MSG_title_all_button"><img src="../icons/all.png" /></label>	 -->
+		</div>
+	
+		<div class="right_tools">
+			<input id="btn_copy_settings" type="image" src="../icons/all.png" data-localize="title" title="__MSG_title_copy_button"/>
+			<input id="acceptBtn_copy" style="display: none; width: 20px; height: 20px;" type="image" src="../icons/accept.png" title="Cancel copy">
+			<input id="cancelBtn_copy" style="display: none; width: 20px; height: 20px;" type="image" src="../icons/cancel.png" title="Cancel copy">
+
+			<div style="display: none; margin-top: .5em;">
+				<span class="copy_guide_text"> Select the color or mode you want to copy. </span>
+			</div>
+
+		</div>
+
+	</div>
+
 </header>
 
 <div id="content">
@@ -30,7 +49,7 @@
 		<thead>
 			<tr id="header_row" class="header_row">
 				<th>Domain</th>
-				<th>URL</th>
+				<th>Path</th>
 				<th>Enable</th>
 				<th>Background</th>
 				<th>Text</th>
@@ -40,18 +59,29 @@
 			</tr>
 		</thead>
 		<tbody id="saved_sites">
-
+			<!-- All sites settings row -->
+			<tr class="saved_page all_row tooltip">
+				<span class="tooltiptext">If you enable these settings, they will be applied on every website where you have not defined any other settings.</span>
+				<td>Everywhere</td>
+				<td>Everywhere</td>
+				<td><label class="switch" id="lbl_all"><input type="checkbox" id="switch_all" data-site="all"><span class="slider round"></span></label></td>
+				<td><input id="color_all" type="color" data-site="all" data-selection="background"></td>
+				<td><input id="color_text_all" type="color" data-site="all" data-selection="text"></td>
+				<td><input id="color_ulink_all" type="color" data-site="all" data-selection="ulink"></td>
+				<td><input id="color_vlink_all" type="color" data-site="all" data-selection="vlink"></td>
+				<td></td>
+			</tr>
 		</tbody>
 	</table>
 
 </div>
 
 <!-- Pop-up containing color selector -->
-<div id="color_selector" class="modal" style="display: none;">
+<div id="color_selector" class="modal">
 
 	<div class="popup_title">
 		<!-- Site info -->
-		<h2></h2>
+		<h2 class="text_ellipsis"></h2>
 		<h3></h3>
 	</div>
 
@@ -79,7 +109,7 @@
 		</svg>
 	</div>
 
-	<div title="Adjust color cycle speed"  class="box_buttons cycle_speed_div">
+	<div class="box_buttons cycle_speed_div">
 		<input id="cycle_speed" class="range vertical-lowest-first round" type="range" min="1" max="50" step="1" value=10 style="visibility: hidden;"/>
 	</div>
 
@@ -90,11 +120,36 @@
 
 </div>
 
+<!-- Deletion confirmation pop-up -->
+<div id="delete_confirm" class="modal modal_delete">
+
+	<header>
+		<p>Are you sure you want to delete this site's color settings? Original colors will be shown again. </p>
+	</header>
+
+	<p>
+		<b>Domain:</b>
+		<span id="domain_delete">youtube.com</span>
+	</p>
+	
+	<p>
+		<b>Path:</b>
+		<span id="url_delete">watch?v=PnaGffSo0hw&ab_channel=ViolentMusic</span>
+	</p>
+
+	<div class="box_buttons">
+		<input id="acceptBtn_delete" type="image" src="../icons/accept.png" title="Delete settings">
+		<input id="cancelBtn_delete" type="image" src="../icons/cancel.png" title="Keep settings">
+	</div>
+
+</div>
+
 </div>
 
 <div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> 
 <div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/dave-gandy" title="Dave Gandy">Dave Gandy</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a></div>
 <div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/becris" title="Becris">Becris</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+<div style="display:none">Icons made by <a href="https://www.flaticon.com/authors/vitaly-gorbachev" title="Vitaly Gorbachev">Vitaly Gorbachev</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 </body>
 
 </html>

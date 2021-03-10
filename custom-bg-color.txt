@@ -2,6 +2,11 @@ Custom Background Color
 
 ADAPTAR info de storage
 
+Botones para reemplazar colores y copiar color
+Mostrar color que ha salido random
+Poder guardar color random
+Selección de it_everywhere
+
 Añadir URL
 Agrupar por dominio/URL
 Textos de title de botones en español
@@ -10,16 +15,20 @@ moverse con flechas
 Opción de no tocar 
 are you sure quitar link
 Cambiar guiones por otra cosa porque los dominios pueden tener guiones
-Botones para reemplazar colores y copiar color
-Mostrar color que ha salido random
-Poder guardar color random
 Quitar opción de cycle en content-script al borrar desde pop-up
 Tooltip de velocidad en cycle_speed
 Ajustar query al mandar mensajes desde pop-up
-Colores RGB raros
+Colores RGB raros (se puede transparencia con hexadecimal se añaden dos números parese)
 Traducir textos
-Selección de it_everywhere
 Investigar por qué el ciclo va muy lento al principio pero luego se activa
 Investigar caso de las barras de VOD de twitch con copyright que no se ve con NOCOLOR
+tooltip en inputs para decir qué color es
+Cambiar descripción
+Mensaje cuando no se ha añadido todavía ninguna página
+Cambiar domain por host por lo menos en las vistas 
+Al borrar/quitar enable mirar si hay configuración de host (puede interesar no aplicarla)
+Al añadir por URL si ya hay de host empezar con configuración de host
+En Soundcloud al pasar de una canción a otra se pone blanco el fondo
+keyboard-focusable
 
 #03152E

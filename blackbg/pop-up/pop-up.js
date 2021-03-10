@@ -1,5 +1,7 @@
 // Manage interaction with the popup and the selected pages list.
 
+const HAPPY_FACE_SEPARATOR = " (\u273F\u25E0\u203F\u25E0\) "; // (✿◠‿◠)
+
 const ENABLED = "enabled";
 const BACKGROUND = "background";
 const TEXT = "text";
@@ -11,32 +13,47 @@ const RANDOM_MODE = "random";
 const CYCLE_MODE = "cycle";
 const NOCOLOR_MODE = "nocolor";
 
+const COLOR_MSG = "setSiteColorForPreview";
+const CYCLE_MSG = "startCycleForPreview";
+const CYCLE_SPEED_MSG = "setCycleSpeedForPreview";
+const NO_COLOR_MSG = "noColorForPreview";
+const ACTIVATE_MSG = "activateBlackBgMode";
+const DEACTIVATE_MSG = "deactivateBlackBgMode";
+const SAVE_PREVIEW_MSG = "savePreview";
+const STOP_PREVIEW_MSG = "STOP_PREVIEW_MSG";
+const APPLY_ALL_MSG = "applyOnAllPages";
+const NOT_APPLY_ALL_MSG = "notApplyOnAllPages";
+
+const MODE_MESSAGES = new Map([[COLOR_MODE, COLOR_MSG], [RANDOM_MODE, COLOR_MSG], [CYCLE_MODE, CYCLE_MSG], [NOCOLOR_MODE, NO_COLOR_MSG]]);
+
+const PIN_ICON = `<input style="display: none; position: relative; bottom: 29px; left: 4px;" id="save_randomColor" type="image" src="../icons/pin.png" title="Delete settings"></input>`;
+
 const SAVED_PAGE_DIV_TEMPLATE =
-`<div class="saved_page" id="page_SITE_WITH_FORMAT">
-    <a href="http://SITE_NO_WWW" class="page_name">SITE_NO_WWW</a>
+`<div class="saved_page" id="page_DOMAIN_WITH_FORMAT">
+    <a href="http://DOMAIN_NO_WWW" class="site_domain">DOMAIN_NO_WWW</a>
     <div class="right">
-        <label class="switch" id="lbl_SITE_WITH_FORMAT"><input type="checkbox" id="switch_SITE_WITH_FORMAT" data-domain="SITE_NO_WWW">
+        <label class="switch" id="lbl_DOMAIN_WITH_FORMAT"><input type="checkbox" id="switch_DOMAIN_WITH_FORMAT" data-domain="DOMAIN_NO_WWW">
         <span class="slider round"></span></label>
 
-        <input id="color_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${BACKGROUND}>
-        <input id="color_text_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${TEXT}>
-        <input id="color_ulink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${ULINK}>
-        <input id="color_vlink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${VLINK}>
+        <input id="color_DOMAIN_WITH_FORMAT" type="color" data-domain="DOMAIN_WITH_FORMAT" data-selection=${BACKGROUND}>
+        <input id="color_text_DOMAIN_WITH_FORMAT" type="color" data-domain="DOMAIN_WITH_FORMAT" data-selection=${TEXT}>
+        <input id="color_ulink_DOMAIN_WITH_FORMAT" type="color" data-domain="DOMAIN_WITH_FORMAT" data-selection=${ULINK}>
+        <input id="color_vlink_DOMAIN_WITH_FORMAT" type="color" data-domain="DOMAIN_WITH_FORMAT" data-selection=${VLINK}>
 
-        <input type="image" src="../icons/delete.png" id="remove_SITE_WITH_FORMAT">
+        <input type="image" src="../icons/delete.png" id="remove_DOMAIN_WITH_FORMAT">
     </div>
 </div>`
 
 const SAVED_PAGE_TR_TEMPLATE = 
-`<tr class="saved_page" id="page_SITE_WITH_FORMAT">
-    <td><a href="http://SITE_NO_WWW" class="page_name">SITE_NO_WWW</a></td>
-    <td>Domain</td>
-    <td><label class="switch" id="lbl_SITE_WITH_FORMAT"><input type="checkbox" id="switch_SITE_WITH_FORMAT" data-domain="SITE_NO_WWW"><span class="slider round"></span></label></td>
-    <td><input id="color_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${BACKGROUND}></td>
-    <td><input id="color_text_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${TEXT}></td>
-    <td><input id="color_ulink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${ULINK}></td>
-    <td><input id="color_vlink_SITE_WITH_FORMAT" type="color" data-domain="SITE_WITH_FORMAT" data-selection=${VLINK}></td>
-    <td><input type="image" src="../icons/delete.png" id="remove_SITE_WITH_FORMAT"></td>
+`<tr class="saved_page" id="page_DOMAIN_WITH_FORMAT||url||__URL__" data-domain="DOMAIN_WITH_FORMAT" data-url="__URL__" style="display:none">
+    <td><a href="http://DOMAIN_NO_WWW" class="site_domain" title="http://DOMAIN_NO_WWW">DOMAIN_NO_WWW</a></td>
+    <td><a href="http://DOMAIN_NO_WWW/__URL__" class="site_url" title="http://DOMAIN_NO_WWW/__URL__">__URL__</a></td>
+    <td><label class="switch" id="lbl_DOMAIN_WITH_FORMAT||url||__URL__"><input type="checkbox" id="switch_DOMAIN_WITH_FORMAT||url||__URL__" data-site="DOMAIN_NO_WWW||url||__URL__"><span class="slider round"></span></label></td>
+    <td><input id="color_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${BACKGROUND}></td>
+    <td><input id="color_text_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${TEXT}></td>
+    <td><input id="color_ulink_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${ULINK}></td>
+    <td><input id="color_vlink_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${VLINK}></td>
+    <td><input type="image" src="../icons/delete.png" id="remove_DOMAIN_WITH_FORMAT||url||__URL__"></td>
 </tr>`
 
 const DEFAULT_BACKGROUND = { mode: COLOR_MODE, value: "000000" }
@@ -49,9 +66,14 @@ var sitesBackground = [];
 var sitesText = [];
 var sitesULinks = [];
 var sitesVLinks = [];
+var allSites;
 
-var not_hide_palette = false;
-var preview_color_just_set = false;
+var differentSavedDomains = new Set();
+
+var notHidePalette = false;
+var previewColorJustSet = false;
+var copyStep = 0;
+var funCounter = 0;
 
 $(document).ready(function () {
 
@@ -63,11 +85,57 @@ $(document).ready(function () {
         }
     });
 
-    // Add current page button
-    $('#btn_add').click(addNewSelectedPage);
+    // Add current domain or URL buttons
+    $('#btn_add_domain').click(function () { addNewSelectedPage() } );
+    $('#btn_add_url').click(function () { addNewSelectedPage(true) } );
 
     // Apply on all pages button
     $('#btn_all').change(applyOnAllPages);
+    
+    // Copy buttons
+    $('#btn_copy_settings').click(initSettingsCopy);
+    $('#acceptBtn_copy').click(exeCopy);
+    $('#cancelBtn_copy').click(hideCopyGuidelines);
+
+    // Display all sites' row info when hovering on its first 3 cells (domain, path and enabling)
+    var hoverTimeout;
+    
+    $(".all_row td:eq(0), .all_row td:eq(1), .all_row td:eq(2)").hover(
+        (e) => {
+            $(e.target).addClass("td_hover");
+
+            hoverTimeout = setTimeout(() => {
+                if ($(".td_hover").length > 0) {
+                    $(".all_row td").animate({"padding-bottom":"40px"}, 200);
+                    setTimeout(() => {
+                        if ($(".tr_hover").length > 0 || $(".td_hover").length > 0)
+                        $(".tooltiptext").css("visibility", "visible");
+                    }, 100); 
+                }
+            }, 500);
+        }, () => {
+            clearTimeout(hoverTimeout);
+            $(".td_hover").removeClass("td_hover");
+            
+            if (!$(".all_row").hasClass("tr_hover"))  {
+                $(".all_row td").animate({"padding-bottom":"10px"}, 100);
+                $(".tooltiptext").css("visibility", "hidden");
+            }
+
+        }
+    );
+
+    // Keep showing the info message if it's visible and the user doesn't leave this row
+    $(".all_row").hover(
+        () => {
+            $(".all_row").addClass("tr_hover");
+        }, () => {
+            $(".all_row").removeClass("tr_hover");
+            $(".all_row td").animate({"padding-bottom":"10px"}, 100);
+            $(".tooltiptext").css("visibility", "hidden");
+        }
+    );
+
 
 //#region Initialize color palette
 
@@ -79,14 +147,14 @@ $(document).ready(function () {
     });
 
     $("#showInput").on('hide.spectrum', function(e, tinycolor) {
-        if (not_hide_palette)
+        if (notHidePalette)
             $("#showInput").spectrum("show");
     }).on('move.spectrum', function(e, color) {
-        if (!preview_color_just_set) {
-            preview_color_just_set = true;
+        if (!previewColorJustSet) {
+            previewColorJustSet = true;
             if (color) siteColorPreview(color.toHexString());
             setTimeout(() => {
-                preview_color_just_set = false;
+                previewColorJustSet = false;
             }, 100);
         }
     });
@@ -128,14 +196,22 @@ $(document).ready(function () {
     $("#color_selector .cycle_div").click(rgbCyclePreview);
     $(".sp-clear-display").click(noColorPreview).attr("data-mode", NOCOLOR_MODE);
 
-
+    // Add button to save random color as selected
+    $(".sp-input-container").append(PIN_ICON);
+    $("#save_randomColor").click(setRandomColorAsSelected_Preview);
 
 // #endregion
 
+    // Delete pop-up buttons
+    $("#acceptBtn_delete").click(deleteSelectedPage);
+    $("#cancelBtn_delete").click(()=> {
+        $("#delete_confirm").hide();
+    });
+
     // Hide palette when the user clicks out of it
-    $("body").click(function(event) {
+    $("body").mousedown(function(event) {
         if ($("#color_selector").is(":visible"))
-            if ($("#color_selector, .sp_container").find(event.target).length == 0 && !$(event.target).is($("#color_selector, .sp_container, input[data-selection]"))) {
+            if ($("#color_selector, .sp-container").find(event.target).length == 0 && !$(event.target).is($("#color_selector, .sp-container, input[data-selection]"))) {
                 closePaletteModal();
         }
     });
@@ -143,7 +219,30 @@ $(document).ready(function () {
     // Show the pages that are currently selected
 
     setTimeout(() => {
-        chrome.storage.sync.get(["sitesEnabled", "sitesBackground", "sitesText", "sitesULinks", "sitesVLinks"], function (result) {
+        chrome.storage.sync.get(["allSites", "sitesEnabled", "sitesBackground", "sitesText", "sitesULinks", "sitesVLinks"], function (result) {
+
+            if (result.allSites) {
+
+                allSites = result.allSites;
+                let allSitesSettings = result.allSites.split(HAPPY_FACE_SEPARATOR);
+
+                let site = "all";
+
+                let siteEnabled = allSitesSettings[0].split("/blv_ck_bg/")[1] === "enabled";
+                let siteBackground = allSitesSettings[1].split("/blv_ck_bg/");
+                let siteText = allSitesSettings[2].split("/blv_ck_bg/");
+                let siteULinks = allSitesSettings[3].split("/blv_ck_bg/");
+                let siteVLinks = allSitesSettings[4].split("/blv_ck_bg/");
+
+                let background = { mode: siteBackground[0], value: siteBackground.length == 2 ? siteBackground[1] : ''}
+                let text = { mode: siteText[0], value: siteText.length == 2 ? siteText[1] : ''}
+                let ulink = { mode: siteULinks[0], value: siteULinks.length == 2 ? siteULinks[1] : ''}
+                let vlink = { mode: siteVLinks[0], value: siteVLinks.length == 2 ? siteVLinks[1] : ''}
+
+                initializeInputs(site, "", siteEnabled, background, text, ulink, vlink)
+
+            }
+
 
             if (result.sitesEnabled) {
 
@@ -152,7 +251,11 @@ $(document).ready(function () {
                 // Display every page name with their own toggle switch and color inputs
                 for (let i = 0; i < sitesEnabled.length; i++) {
 
-                    let siteEnabled = sitesEnabled[i].split("/blv_ck_bg/");
+                    let site = sitesEnabled[i].split("/blv_ck_bg/")[0]
+                    let isUrl = site.includes("||url||");
+                    site = { domain: isUrl ? site.split("||url||")[0] : site, url: isUrl ? site.split("||url||")[1] : "" };
+
+                    let siteEnabled = sitesEnabled[i].split("/blv_ck_bg/")[1] === "enabled";
                     let siteBackground = sitesBackground[i].split("/blv_ck_bg/");
                     let siteText = sitesText[i].split("/blv_ck_bg/");
                     let siteULinks = sitesULinks[i].split("/blv_ck_bg/");
@@ -163,10 +266,15 @@ $(document).ready(function () {
                     let ulink = { mode: siteULinks[1], value: siteULinks.length == 3 ? siteULinks[2] : ''}
                     let vlink = { mode: siteVLinks[1], value: siteVLinks.length == 3 ? siteVLinks[2] : ''}
 
-                    addSelectedPageToPopup(siteEnabled[0], siteEnabled[1] === "enabled", background, text, ulink, vlink);
+                    addSelectedPageToPopup(site, siteEnabled, background, text, ulink, vlink);
                 }
             }
+
+            // If there are saved settings for the tab's site where the pop-up has been opened, and these contain some random mode, the currently displayed colors are requested.
+            
+
         });
+
     }, 1);
 
     // window.onblur(function () {
@@ -175,38 +283,49 @@ $(document).ready(function () {
 
 });
 
-function addNewSelectedPage() {
-    // Get current tab's domain, register it with chrome.storage and send message to all tabs to notify the addition
+function addNewSelectedPage(isUrl) {
+    // Get current tab's URL, register it with chrome.storage and send message to all tabs to notify the addition
     chrome.tabs.query({ active: true, currentWindow: true, 'windowId': chrome.windows.WINDOW_ID_CURRENT }, function (tabs) {
-        let domain = new URL(tabs[0].url).hostname;
+        let url = new URL(tabs[0].url);
+        let hrefNoOrigin = url.href.replace(url.origin, "").substring(1);
+        let site = url.hostname + (isUrl && hrefNoOrigin ? `||url||${hrefNoOrigin}` : "");
+        site = site.replace("www.", "");
 
-        // Avoid adding the same domain twice
-        if (!sitesEnabled.find(page_info => page_info.startsWith (domain))) {
+        // Avoid adding the same site twice
+        if (!sitesEnabled.find(page_info => page_info.split("/blv_ck_bg/")[0] === site)) {
 
             // Default new values
-            sitesEnabled.push([domain, "enabled"].join("/blv_ck_bg/"));
-            sitesBackground.push([domain, DEFAULT_BACKGROUND.mode, DEFAULT_BACKGROUND.value].join("/blv_ck_bg/"));
-            sitesText.push([domain, DEFAULT_TEXT.mode, DEFAULT_TEXT.value].join("/blv_ck_bg/"));
-            sitesULinks.push([domain, DEFAULT_ULINK.mode].join("/blv_ck_bg/"));
-            sitesVLinks.push([domain, DEFAULT_VLINK.mode].join("/blv_ck_bg/"));
+            sitesEnabled.push([site, "enabled"].join("/blv_ck_bg/"));
+            sitesBackground.push([site, DEFAULT_BACKGROUND.mode, DEFAULT_BACKGROUND.value].join("/blv_ck_bg/"));
+            sitesText.push([site, DEFAULT_TEXT.mode, DEFAULT_TEXT.value].join("/blv_ck_bg/"));
+            sitesULinks.push([site, DEFAULT_ULINK.mode].join("/blv_ck_bg/"));
+            sitesVLinks.push([site, DEFAULT_VLINK.mode].join("/blv_ck_bg/"));
 
-            // Domains alphabetically ordered
+            // Sites alphabetically ordered (host > URL)
             [sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks].map(function (siteList) {
                 siteList.sort(function (c1, c2) {
                     return c1.replace("www.", "").localeCompare(c2.replace("www.", ""));
                 });
             });
 
+            site = { domain: site.includes("||url||") ? site.split("||url||")[0] : site, url: site.includes("||url||") ? site.split("||url||")[1] : "" };
+
             chrome.storage.sync.set({
                 "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
-                function () {addSelectedPageToPopup(domain, true, DEFAULT_BACKGROUND, DEFAULT_TEXT, DEFAULT_ULINK, DEFAULT_VLINK);
+                function () {addSelectedPageToPopup(site, true, DEFAULT_BACKGROUND, DEFAULT_TEXT, DEFAULT_ULINK, DEFAULT_VLINK);
             })
 
         } else {
-            $(`#switch_${domain.replace("www.", "").replaceAll('.','-')}`).prop('checked', true);
+            if (!$(`[id='switch_${site}']`).prop("checked"))
+                $(`[id='switch_${site}']`).prop("checked", true);
+
+            $(`[id='page_${site}'] .site_domain, [id='page_${site}'] .site_url`).removeClass("highlight_3s_blue");
+            setTimeout(() => {
+                $(`[id='page_${site}'] .site_domain, [id='page_${site}'] .site_url`).addClass("highlight_3s_blue");
+            });
         }
 
-        sendMessageToContentScripts("activateBlackBgMode", domain);
+        sendMessageToContentScripts(ACTIVATE_MSG, site);
     });
 }
 
@@ -218,13 +337,49 @@ function openSettingsTab() {
     }
 }
 
-function openPaletteModal(event, input) {
+function onColorInputClick (event, input) {
 
     event.preventDefault();
 
-    let domain = $(input).attr("data-domain").replaceAll("-", ".");
+    switch (copyStep) {
+        case 1:
+            $(".selected_from_copy").removeClass("selected_from_copy");
+            $(input).addClass("selected_from_copy");
+            $(".copy_guide_text").text("Now select the colors/modes where you want to apply the copy.");
+
+            copyStep = 2;
+            funCounter = 0;
+            break;
+
+        case 2:
+
+            if (!$(input).hasClass("selected_from_copy")) {
+                $(input).toggleClass("selected_to_copy");
+                if ($(".selected_to_copy").length > 0) {
+                    $(".copy_guide_text").html(`The copy will be executed when you press on the &#10004; button.`); // ✔
+                    $("#acceptBtn_copy").show();
+                } else {
+                    $(".copy_guide_text").text(funCounter >= 50 ? "Are you having fun?" : "Select the colors/modes where you want to apply the copy.");
+                    $("#acceptBtn_copy").hide();
+                }
+            }
+            funCounter++;
+            break;
+    
+        default:
+            openPaletteModal(input);
+            break;
+    }
+
+}
+
+function openPaletteModal(input) {
+
+    let site = $(input).attr("data-site").replaceAll("-", ".").replace("||url||", "/");
     let selection = $(input).attr("data-selection");
     let mode = $(input).attr("data-mode");
+
+    if (mode === RANDOM_MODE) getCurrentRandomColor(site, selection);
 
     // Increase body's height so the modal can fit in
     let current_body_height = parseFloat($("body").css("height").replace("px", ""));
@@ -237,7 +392,7 @@ function openPaletteModal(event, input) {
     $(input).attr("data-palette", "open");
 
     // Show what selection is being made in pop-up
-    $(".popup_title h2").text(domain).attr("href", `http://${domain}`);
+    $(".popup_title h2").text(site).attr("href", `http://${site}`);
     $(".popup_title h3").text(`Choose a color for ${selection}.`);
 
     // Set palette to site's custom color
@@ -252,9 +407,11 @@ function openPaletteModal(event, input) {
      $("#content, header").addClass("semi_transparent");
 
     $("#color_selector").show();
-    not_hide_palette = true;
+    notHidePalette = true;
 
     visualizeSelectedMode(mode);
+
+    calculateOptimalCycleRateAndSetInputTitle();
 
     setTimeout(() => {
         // Adjust palette's position
@@ -268,7 +425,7 @@ function openPaletteModal(event, input) {
 }
 
 function closePaletteModal(saveChanges) {
-    not_hide_palette = false;
+    notHidePalette = false;
 
     // Adjust pop-up size
     if ($("body").attr("data-height")) {
@@ -277,10 +434,10 @@ function closePaletteModal(saveChanges) {
     }
 
     // Send message to stop preview (apply changes in webpage if accept button has been pressed)
-    let domain = $("input[data-palette='open']").attr("data-domain").replaceAll("-", ".");
+    let site = $("input[data-palette='open']").attr("data-site").replaceAll("-", ".");
     let selection = $("input[data-palette='open']").attr("data-selection");
 
-    sendMessageToContentScripts(saveChanges ? "savePreview" : "stopPreview", domain, selection);
+    sendMessageToContentScripts(saveChanges ? SAVE_PREVIEW_MSG : STOP_PREVIEW_MSG, site, selection);
 
     // Hide palette and modal
     cycleSelected = false;
@@ -291,83 +448,289 @@ function closePaletteModal(saveChanges) {
 }
 
 function applyOnAllPages() {
-    $("label[for='btn_all'").toggleClass("opacity_25");
     chrome.storage.sync.set({'itEverywhere': this.checked}, function() { });
 
     if (this.checked)
-        sendMessageToContentScripts("applyOnAllPages");
+        sendMessageToContentScripts(APPLY_ALL_MSG);
     else
-        sendMessageToContentScripts("notApplyOnAllPages");
+        sendMessageToContentScripts(NOT_APPLY_ALL_MSG);
 
 }
 
-function addSelectedPageToPopup(domain, enabled, background, text, ulink, vlink) {
+function initSettingsCopy() {
+    copyStep = 1;
+
+    $(".left_tools, #btn_copy_settings").stop(true, true).hide();
+    $("#cancelBtn_copy").show();
+    $(".right_tools > div").show( "fade", '', 500 );
+
+    let cellFromColumnSelector = "table tr td:nth-child(NUM), table tr th:nth-child(NUM)";
+    $(`${cellFromColumnSelector.replaceAll("NUM", "1")}, ${cellFromColumnSelector.replaceAll("NUM", "2")}, ${cellFromColumnSelector.replaceAll("NUM", "3")}, ${cellFromColumnSelector.replaceAll("NUM", "8")}`)
+    // What is this? 🤣
+    .addClass("semi_transparent");
+}
+
+function hideCopyGuidelines() {
+    copyStep = 0;
+    
+    $("#cancelBtn_copy, #acceptBtn_copy, .right_tools > div").stop(true, true).hide();
+    $(".left_tools, #btn_copy_settings").show( "fade", '', 500 );
+
+    $(".selected_from_copy, .selected_to_copy").removeClass("selected_from_copy").removeClass("selected_to_copy");
+
+    $(".semi_transparent").removeClass("semi_transparent");
+} 
+
+function exeCopy() {
+
+    let inputFrom = $(".selected_from_copy");
+
+    let value = inputFrom.val().replace('#', '');
+    let cycleInterval = inputFrom.attr("data-cycle_speed");
+    let mode = inputFrom.attr("data-mode");
+
+    $(".selected_to_copy").each(function() {
+
+        let inputTo = $(this);
+
+        let site = inputTo.attr("data-site");
+        let selection = inputTo.attr("data-selection");
+        let index = getSiteIndex(site, selection);
+
+        switch (selection) {
+
+            case BACKGROUND:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesBackground[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesBackground[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesBackground[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesBackground[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+    
+                break;
+    
+            case TEXT:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesText[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesText[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesText[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesText[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+            case ULINK:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesULinks[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesULinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesULinks[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        break;
+    
+                    case NOCOLOR_MODE:
+                        sitesULinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+            case VLINK:
+    
+                switch (mode) {
+                    case COLOR_MODE:
+                        sitesVLinks[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        break;
+                        
+                    case RANDOM_MODE:
+                        sitesVLinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
+                        break;
+    
+                    case CYCLE_MODE:
+                        sitesVLinks[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        break;
+        
+                    case NOCOLOR_MODE:
+                        sitesVLinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
+                        break;
+                }
+                break;
+    
+        }
+
+        // Set input's data or icon
+        inputTo.val(`#${value}`);
+        inputTo.attr("data-mode", mode);
+
+        if (mode === CYCLE_MODE) 
+            inputTo.attr("data-cycle_speed", cycleInterval);
+
+        modifyInputDependingOnMode(inputTo);
+
+        if (mode === RANDOM_MODE)
+            value = getPaddedRandomHexColor();
+        
+        // Could be unified in only one message
+        sendMessageToContentScripts(MODE_MESSAGES.get(mode), site, selection, value);
+        sendMessageToContentScripts(SAVE_PREVIEW_MSG, site, selection);
+
+    });
+
+    saveSites();
+    hideCopyGuidelines();
+} 
+
+function addSelectedPageToPopup(site, enabled, background, text, ulink, vlink) {
+
+    let domain = site.domain;
+    let isUrl = (site.url) ? true : false;
 
     let new_saved_page_elem_html = SAVED_PAGE_TR_TEMPLATE
-    .replaceAll("SITE_WITH_FORMAT", domain.replace("www.", "").replaceAll('.', '-'))
-    .replaceAll("SITE_NO_WWW", domain.replace("www.", ""));
-    // .replaceAll("SITE_RAW", domain);
+    .replaceAll("DOMAIN_WITH_FORMAT", site.domain.replace("www.", ""))
+    .replaceAll("DOMAIN_NO_WWW", site.domain.replace("www.", ""))
+    .replaceAll("__URL__", site.url);
 
-    let position_in_list = sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes (domain.replace("www.", ""))));
-    domain = domain.replace("www.", "").replaceAll('.', '-');
+    if (!isUrl)
+        new_saved_page_elem_html = new_saved_page_elem_html.replaceAll("||url||", "");
+
+    site = `${site.domain}${isUrl ? `||url||${site.url}` : ""}`;
+
+    let position_in_list = sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes (site.replace("www.", ""))));
+    site = site.replace("www.", "");
 
     if (position_in_list == 0)
         $("#saved_sites").append(new_saved_page_elem_html);
     else
-        $(".saved_page").eq(position_in_list - 1).after(new_saved_page_elem_html);
+        $(".saved_page").eq(position_in_list - 1 + 1).after(new_saved_page_elem_html); // Skip all sites' row
+
+        
+    initializeInputs(site, domain, enabled, background, text, ulink, vlink)
+    
+}
+
+function initializeInputs(site, domain, enabled, background, text, ulink, vlink) {
 
     if (enabled)
-        $(`#switch_${domain}`)[0].checked = true;
+        $(`[id='switch_${site}']`)[0].checked = true;
+    
+    $(`[id='page_${site}']`).show("fast");
 
-    // Assign color values and modes to inputs (values may be null)
-    $(`#color_${domain}`).val(`#${background.value}`).attr("data-mode", background.mode);
-    $(`#color_text_${domain}`).val(`#${text.value}`).attr("data-mode", text.mode);
-    $(`#color_ulink_${domain}`).val(`#${ulink.value}`).attr("data-mode", ulink.mode);
-    $(`#color_vlink_${domain}`).val(`#${vlink.value}`).attr("data-mode", vlink.mode);
+    // Assign values and modes to inputs
+    $(`[id='color_${site}']`).attr("data-mode", background.mode);
+    $(`[id='color_text_${site}']`).attr("data-mode", text.mode);
+    $(`[id='color_ulink_${site}']`).attr("data-mode", ulink.mode);
+    $(`[id='color_vlink_${site}']`).attr("data-mode", vlink.mode);
 
     // Modify input in case of selected extra mode (random, cycle, no color)
-    $(`#color_${domain}, #color_text_${domain}, #color_ulink_${domain}, #color_vlink_${domain}`).each(function () { 
+    $(`[id='color_${site}'], [id='color_text_${site}'], [id='color_ulink_${site}'], [id='color_vlink_${site}']`).each(function () { 
         modifyInputDependingOnMode($(this)); 
     })
 
-    if (background.mode === CYCLE_MODE) $(`#color_${domain}`).attr("data-cycle_speed", background.value);
-    if (text.mode === CYCLE_MODE) $(`#color_text_${domain}`).attr("data-cycle_speed", text.value);
-    if (ulink.mode === CYCLE_MODE) $(`#color_ulink_${domain}`).attr("data-cycle_speed", ulink.value);
-    if (vlink.mode === CYCLE_MODE) $(`#color_vlink_${domain}`).attr("data-cycle_speed", vlink.value);
+    if (background.value)
+        if (background.mode === COLOR_MODE)
+            $(`[id='color_${site}']`).val(`#${background.value}`).attr("title", `#${background.value}`);
+        else if (background.mode === CYCLE_MODE)       
+            $(`[id='color_${site}']`).val(background.value).attr("data-cycle_speed", background.value);
 
-    // Open site in new tab when URL is clicked
-    $(`#page_${domain} .page_name`).click(openSiteInNewTab);
+    if (text.value)
+        if (text.mode === COLOR_MODE)
+            $(`[id='color_text_${site}']`).val(`#${text.value}`)
+        else if (text.mode === CYCLE_MODE)
+            $(`[id='color_text_${site}']`).val(text.value).attr("data-cycle_speed", text.value);
+
+    if (ulink.value)
+        if (ulink.mode === COLOR_MODE)
+            $(`[id='color_ulink_${site}']`).val(`#${ulink.value}`)
+        else if (ulink.mode === CYCLE_MODE)
+            $(`[id='color_ulink_${site}']`).val(ulink.value).attr("data-cycle_speed", ulink.value);
+
+    if (vlink.value)
+        if (vlink.mode === COLOR_MODE)
+            $(`[id='color_vlink_${site}']`).val(`#${vlink.value}`)
+        else if (vlink.mode === CYCLE_MODE)
+            $(`[id='color_vlink_${site}']`).val(vlink.value).attr("data-cycle_speed", vlink.value);
 
     // Save enabled/disabled option for selected pages on switch interaction
-    $(`#switch_${domain}`).bind('change', (delayFunction(enableDisablePage, 1)));
+    $(`[id='switch_${site}']`).bind('change', (delayFunction(enableDisablePage, 1)));
 
     // Open palette when any of the inputs is clicked
     
-    // $(`#color_${domain}, #color_text_${domain}, #color_ulink_${domain}, #color_vlink_${domain}`).click(openPaletteModal);
-    $(`#color_${domain}, #color_text_${domain}, #color_ulink_${domain}, #color_vlink_${domain}`).click(function (event) {
-        openPaletteModal(event, this);
+    // $(`#color_${site}, #color_text_${site}, #color_ulink_${site}, #color_vlink_${site}`).click(openPaletteModal);
+    $(`[id='color_${site}'], [id='color_text_${site}'], [id='color_ulink_${site}'], [id='color_vlink_${site}']`).click(function (event) {
+        onColorInputClick(event, this);
     });
 
-    // Delete selected page from list (popup and storage; asks for confirmation)
-    $(`#remove_${domain}`).bind('click', { enabled: enabled }, deleteConfirmOptions);
+    if (site === "all") return;
+
+    // Open site in new tab when URL is clicked
+    $(`[id='page_${site}'] .site_domain`).click(openSiteInNewTab);
+    $(`[id='page_${site}'] .site_url`).click(openSiteInNewTab);
+
+    // Delete selected page from list (pop-up and storage; asks for confirmation)
+    $(`[id='remove_${site}']`).click(function () {
+        showDeleteConfirmationPopup($(this).closest("tr"));
+    });
+
+    // Modify domain cells' appearance if they belong to a site whose domain has saved settings.
+    $(`tr[data-domain='${domain}']`).each(function () {
+        if (this.id.includes("||url||"))
+            // Check if there are saved settings for the domain
+            if ($(`[id='page_${domain}']`).length > 0)
+                $(this).find("td").eq(0).addClass("url_saved_domain");
+            else
+                $(this).find("td").eq(0).removeClass("url_saved_domain");
+    });
+
 }
 
 function modifyInputDependingOnMode (input) {
     switch (input.attr("data-mode")) {
         case COLOR_MODE:
             input.attr("type", "color").removeAttr("src").removeClass("input_extra_mode");
+            input.attr("title", input.val());
             break;
             
         case RANDOM_MODE:
             input.attr("type", "image").attr("src", "../icons/random_2.png").addClass("input_extra_mode");
+            input.attr("title", "Random color every time page loads.");
             break;
     
         case CYCLE_MODE:
             input.attr("type", "image").attr("src", "../icons/cycle_2.png").addClass("input_extra_mode");
+            input.attr("title", "Color cycles through RBG spectrum.");
             break;
 
         case NOCOLOR_MODE:
             input.attr("type", "image").attr("src", "../icons/nocolor_2.png").addClass("input_extra_mode");
+            input.attr("title", "Original color");
             break;
     }
 }
@@ -381,67 +744,142 @@ function openSiteInNewTab() {
     return false;
 }
 
+function getCurrentRandomColor(site, selection) {
+
+    // If the selected input belongs to the site where the pop-up is being visualized, get color from it.
+    chrome.tabs.query({ active: true, currentWindow: true }, function (currentTab) {
+
+        if (currentTab[0].url.includes(site)) {
+            chrome.tabs.sendMessage(currentTab[0].id, { action: "getCurrentColor", selection: selection }, function (response) { 
+                if (response && response.currentColor) {
+                    $("#showInput").spectrum("set", `${response.currentColor}`);
+                    $(".sp-input").val(response.currentColor);
+                    $("#save_randomColor").show();
+                }
+            });
+            return;
+
+        } else {
+
+            // Check if the site is opened in this moment in one or more tabs. If so, get the color from the last one of them.
+            let urls = [];
+
+            if (site.domain) 
+                site = [site.domain, site.url];
+            else
+                site = site.split("||url||");
+            
+            urls.push( site.length > 1 ? `http://*.${site[0]}/${site[1]}` : `http://*.${site[0]}/*` );
+            urls.push( site.length > 1 ? `https://*.${site[0]}/${site[1]}` : `https://*.${site[0]}/*` );
+        
+            chrome.tabs.query({ url: urls }, function (tabs) {
+
+                if (tabs.length == 0) 
+                    return;
+
+                let lastTabId = tabs[tabs.length-1].id;
+                    chrome.tabs.sendMessage(lastTabId, { action: "getCurrentColor", selection: selection }, function (response) { 
+                        if (response && response.currentColor) {
+                            $("#showInput").spectrum("set", `${response.currentColor}`);
+                            $(".sp-input").val(response.currentColor);
+                            $("#save_randomColor").show();
+                        }
+                    });
+            });
+
+            chrome.tabs.query({ active: true, currentWindow: true }, function (currentTab) {
+                debugger;
+            });
+
+        }
+
+    });
+
+}
+
 function enableDisablePage() {
 
     let enabled = this.checked;
-    let domain = $(this).data("domain");
-    let index = getPageIndexInArrayByDomain(domain, ENABLED);
+    let site = $(this).attr("data-site");
+    let index = getSiteIndex(site, ENABLED);
 
     sitesEnabled[index] = sitesEnabled[index].split('/blv_ck_bg/')[0] + '/blv_ck_bg/' + ((enabled) ? 'enabled' : 'disabled');
 
     saveSites(ENABLED);
-    sendMessageToContentScripts(enabled ? "activateBlackBgMode" : "deactivateBlackBgMode", domain);
+    sendMessageToContentScripts(enabled ? ACTIVATE_MSG : DEACTIVATE_MSG, site);
 
 }
 
-function deleteConfirmOptions(event) {
+function showDeleteConfirmationPopup(site_tr) {
 
-    $("#saved_pages").find("[id^='cancelBtn']").click();
-
-    let domain = this.id.split('_')[1];
-
-    let selectedPageDiv = $(`.saved_page:contains(${domain.replaceAll('-','.')})`);
-    let pageDivContent = $(selectedPageDiv).html();
-
-    $(selectedPageDiv).find('.page_name:first').html(getLocalizedText("msg_confimation"));
-
-    let optionsDiv = $(selectedPageDiv).find('.right:first')
-    optionsDiv.html(`<input id="acceptBtn_${domain}" type="image" src="../icons/accept.png" title="Accept" style="margin-right:15px"/>`);
-    optionsDiv.html(optionsDiv.html() + `<input id="cancelBtn_${domain}" type="image" src="../icons/cancel.png" title="Cancel"/>`);
-
-    $(`#acceptBtn_${domain}`).click(deleteSelectedPage);
-    $(`#cancelBtn_${domain}`).bind('click', { divContent: pageDivContent, enabled: event.data.enabled }, restoreSelectedPageDiv);
-
+    let domain = $(site_tr).attr("data-domain");
+    let url = $(site_tr).attr("data-url");
+    
+    // Indicate which color is being selected
+    $("[data-delete]").removeAttr("data-delete");
+    $(site_tr).attr("data-delete", "open");
+    
+    // Show selected page's info in pop-up
+    $("#domain_delete").html(domain);
+    
+    if (url) {
+        $("#delete_confirm").removeClass("modal_delete_onlyDomain").addClass("modal_delete_domainAndUrl");
+        
+        $("#url_delete").html(url);
+        $("#url_delete").closest("p").show();
+    }
+    else {
+        $("#delete_confirm").removeClass("modal_delete_domainAndUrl").addClass("modal_delete_onlyDomain");
+        $("#url_delete").closest("p").hide();
+    }
+    
+    $("#delete_confirm").show();
 }
 
 function deleteSelectedPage() {
-    let domain = this.id.split('_')[1].replaceAll('-', '.');
+    
+    let domain = $("[data-delete]").attr("data-domain").replaceAll("-", ".");
+    let url = $("[data-delete]").attr("data-url").replaceAll("-", ".");
 
-    sitesEnabled = sitesEnabled.filter(page_info => !page_info.includes(domain));
-    sitesBackground = sitesBackground.filter(page_info => !page_info.includes(domain));
-    sitesText = sitesText.filter(page_info => !page_info.includes(domain));
-    sitesULinks = sitesULinks.filter(page_info => !page_info.includes(domain));
-    sitesVLinks = sitesVLinks.filter(page_info => !page_info.includes(domain));
+    let site = domain + (url ? `||url||${url}` : "");
+
+    sitesEnabled = sitesEnabled.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
+    sitesBackground = sitesBackground.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
+    sitesText = sitesText.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
+    sitesULinks = sitesULinks.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
+    sitesVLinks = sitesVLinks.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
 
     chrome.storage.sync.set({
         "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
-        function () { location.reload(); }
+        function () { 
+            $(`tr[id='page_${site}']`).remove();
+
+            // Modify domain cells' appearance if they belong to a site whose domain has saved settings.
+            $(`tr[data-domain='${domain}']`).each(function () {
+                if (this.id.includes("||url||"))
+                    // Check if there are saved settings for the domain
+                    if ($(`[id='page_${domain}']`).length > 0)
+                        $(this).find("td").eq(0).addClass("url_saved_domain");
+                    else
+                        $(this).find("td").eq(0).removeClass("url_saved_domain");
+            });
+
+            $("#delete_confirm").hide();
+        }
     );
-    sendMessageToContentScripts("deactivateBlackBgMode", domain);
+
+    sendMessageToContentScripts(DEACTIVATE_MSG, site);
 }
 
-function restoreSelectedPageDiv(event) {
+function saveSites(type, allSites) {
 
-    let domain = this.id.split('_')[1];
-
-    $(`#page_${domain}`).html(event.data.divContent);
-
-    $(`#switch_${domain}`).prop('checked', event.data.enabled);
-    $(`#switch_${domain}`).change(enableDisablePage);
-    $(`#remove_${domain}`).bind('click', { enabled: event.data.enabled }, deleteConfirmOptions);
-}
-
-function saveSites(type) {
+    if (allSites) {
+        chrome.storage.sync.set(
+            {"allSites": allSites},
+            function () { console.log();
+        });
+        return;
+    }
 
     if (type) {
 
@@ -477,35 +915,45 @@ function saveSites(type) {
 
 }
 
-function sendMessageToContentScripts(action, domain, selection, value) {
-    chrome.tabs.query({}, function (tabs) {
+function sendMessageToContentScripts(action, site, selection, value) {
+    let urls = [];
+
+    if (site.domain) 
+        site = [site.domain, site.url];
+    else
+        site = site.split("||url||");
+    
+    urls.push( site.length > 1 ? `http://*.${site[0]}/${site[1]}` : `http://*.${site[0]}/*` );
+    urls.push( site.length > 1 ? `https://*.${site[0]}/${site[1]}` : `https://*.${site[0]}/*` );
+
+    chrome.tabs.query({ url: urls }, function (tabs) {
         for (var i = 0, length = tabs.length; i < length; i++) {
-            chrome.tabs.sendMessage(tabs[i].id, { domain: domain, action: action, selection:selection, value: value  }, function () { });
+            chrome.tabs.sendMessage(tabs[i].id, { site: site, action: action, selection:selection, value: value  }, function () { });
         }
     });
 }
 
-function getPageIndexInArrayByDomain(domain, selection) {
+function getSiteIndex(site, selection) {
 
     switch (selection) {
 
         case ENABLED:
-            return sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes(domain)));
+            return sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes(site)));
 
         case BACKGROUND:
-            return sitesBackground.indexOf(sitesBackground.find(page_info => page_info.includes(domain)));
+            return sitesBackground.indexOf(sitesBackground.find(page_info => page_info.includes(site)));
 
         case TEXT:
-            return sitesText.indexOf(sitesText.find(page_info => page_info.includes(domain)));
+            return sitesText.indexOf(sitesText.find(page_info => page_info.includes(site)));
 
         case ULINK:
-            return sitesULinks.indexOf(sitesULinks.find(page_info => page_info.includes(domain)));
+            return sitesULinks.indexOf(sitesULinks.find(page_info => page_info.includes(site)));
 
         case VLINK:
-            return sitesVLinks.indexOf(sitesVLinks.find(page_info => page_info.includes(domain)));
+            return sitesVLinks.indexOf(sitesVLinks.find(page_info => page_info.includes(site)));
 
         default:
-            return sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes(domain)));
+            return sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes(site)));
 
 
     }
