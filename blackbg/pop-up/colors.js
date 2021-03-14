@@ -243,105 +243,53 @@ function getSelectionAndSetIt() {
         let allSitesSettings = allSites.split(HAPPY_FACE_SEPARATOR);
         let newSection;
 
+        switch (mode) {
+            case COLOR_MODE:
+                newSection = [COLOR_MODE, color].join("/blv_ck_bg/");
+                break;
+                
+            case RANDOM_MODE:
+                newSection = [RANDOM_MODE].join("/blv_ck_bg/");
+                break;
+
+            case CYCLE_MODE:
+                newSection = [CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
+                break;
+
+            case NOCOLOR_MODE:
+                newSection = [NOCOLOR_MODE].join("/blv_ck_bg/");
+                break;
+        }
+
         switch (selection) {
     
             case BACKGROUND:
-    
-                switch (mode) {
-                    case COLOR_MODE:
-                        newSection = [COLOR_MODE, color].join("/blv_ck_bg/");
-                        break;
-                        
-                    case RANDOM_MODE:
-                        newSection = [RANDOM_MODE].join("/blv_ck_bg/");
-                        break;
-    
-                    case CYCLE_MODE:
-                        newSection = [CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                        break;
-    
-                    case NOCOLOR_MODE:
-                        newSection = [NOCOLOR_MODE].join("/blv_ck_bg/");
-                        break;
-                }
-
                 allSites = [allSitesSettings[0], newSection, allSitesSettings[2], allSitesSettings[3], allSitesSettings[4]];
                 break;
     
             case TEXT:
-    
-                switch (mode) {
-                    case COLOR_MODE:
-                        sitesText[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
-                        break;
-                        
-                    case RANDOM_MODE:
-                        sitesText[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
-                        break;
-    
-                    case CYCLE_MODE:
-                        sitesText[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                        break;
-    
-                    case NOCOLOR_MODE:
-                        sitesText[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
-                        break;
-                }
+                allSites = [allSitesSettings[0], allSitesSettings[1], newSection, allSitesSettings[3], allSitesSettings[4]];
                 break;
     
             case ULINK:
-    
-                switch (mode) {
-                    case COLOR_MODE:
-                        sitesULinks[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
-                        break;
-                        
-                    case RANDOM_MODE:
-                        sitesULinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
-                        break;
-    
-                    case CYCLE_MODE:
-                        sitesULinks[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                        break;
-    
-                    case NOCOLOR_MODE:
-                        sitesULinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
-                        break;
-                }
+                allSites = [allSitesSettings[0], allSitesSettings[1], allSitesSettings[2], newSection, allSitesSettings[4]];
                 break;
     
             case VLINK:
-    
-                switch (mode) {
-                    case COLOR_MODE:
-                        sitesVLinks[index] = [site, COLOR_MODE, color].join("/blv_ck_bg/");
-                        break;
-                        
-                    case RANDOM_MODE:
-                        sitesVLinks[index] = [site, RANDOM_MODE].join("/blv_ck_bg/");
-                        break;
-    
-                    case CYCLE_MODE:
-                        sitesVLinks[index] = [site, CYCLE_MODE, cycleInterval].join("/blv_ck_bg/");
-                        break;
-        
-                    case NOCOLOR_MODE:
-                        sitesVLinks[index] = [site, NOCOLOR_MODE].join("/blv_ck_bg/");
-                        break;
-                }
+                allSites = [allSitesSettings[0], allSitesSettings[1], allSitesSettings[2], allSitesSettings[3], newSection];
                 break;
     
         }
+
+        allSites = allSites.join(HAPPY_FACE_SEPARATOR);
 
     }
 
     // Set input's data or icon
     if (mode === COLOR_MODE)
         input.val(`#${color}`);
-    else if (mode === CYCLE_MODE) {
-        input.val(cycleInterval);
-        input.attr("data-cycle_speed", cycleInterval);
-    }
+    else if (mode === CYCLE_MODE)
+        input.val(cycleInterval).attr("data-cycle_speed", cycleInterval);
         
     input.attr("data-mode", mode);
 

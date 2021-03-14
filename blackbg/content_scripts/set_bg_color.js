@@ -5,6 +5,8 @@ const hexToRgb = hex =>
 .map(x => parseInt(x, 16))
 .join(", ")})`
 
+const HAPPY_FACE_SEPARATOR = " (\u273F\u25E0\u203F\u25E0\) "; // (✿◠‿◠)
+
 const LINKS_STYLESHEET_ID = "blv_ck_bg_links"
 const LINKS_STYLE_SECTION = `<style type="text/css" id="${LINKS_STYLESHEET_ID}" media="not all"> </style>`
   
@@ -19,6 +21,10 @@ const RANDOM_MODE = "random";
 const CYCLE_MODE = "cycle";
 const NOCOLOR_MODE = "nocolor";
 
+const ENABLE_NEVER = "never";
+const ENABLE_ONLY_EVERYWHERE = "everywhere";
+const ENABLE_CUSTOM = "custom";
+
 const HTML_ELEMENTS_EXCEPTIONS = "script, noscript, style, link, img, video";
 const HTML_VIP_ELEMENTS = 
 ".chat-author__display-name, textarea[autocomplete='twitch-chat'], .sp-thumb-inner, .r-6416eg, #progress.style-scope, .ScChannelStatusIndicator-sc-1cf6j56-0"; // Twitch chat usernames 
@@ -29,6 +35,7 @@ const HTML_VIP_ELEMENTS =
 var currentUrl = window.location.href;
 
 var pageEnabled = false;
+var enableState;
 var itEverywhere = false;
 var isUrl = false;
 
@@ -108,6 +115,7 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 	let hrefNoOrigin = window.location.href.replace(window.location.origin, "").substring(1); // Remove first slash (/)
 
 	// Apply on all pages
+
 	if (msg.action === "applyOnAllPages") {
 		itEverywhere = true;
 		if (!pageEnabled)
@@ -122,6 +130,42 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 		return;
 	}
 
+	// Apply on all sites where general settings are being applied
+
+	if (msg.action.includes("_ALL") && itEverywhere && enableState === ENABLE_ONLY_EVERYWHERE) {
+
+		switch(msg.action.replace("_ALL", "")) {
+
+			case "setSiteColorForPreview":
+				setSiteColorForPreview(msg.selection, msg.value);
+				break;
+	
+			case "startCycleForPreview":
+				startCycleForPreview(msg.selection, msg.value);
+				break;
+	
+			case "setCycleSpeedForPreview":
+				setCycleSpeedForPreview(msg.selection, msg.value);
+				break;
+	
+			case "noColorForPreview":
+				noColorForPreview(msg.selection);
+				break;
+	
+			case "savePreview":
+				savePreview(msg.selection);
+				break;
+	
+			case "stopPreview":
+				stopPreview(msg.selection);
+				break;
+			
+		}
+
+		return;
+
+	}
+
 	// Apply on specific site
 
 	if (!isUrl == 1 && !domain.includes(msg.site[0])) // Watch out
@@ -131,6 +175,14 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 		return;
 
 	switch(msg.action) {
+
+		case "changeState":
+			// $(".blackbg_lets_go, .blacktc_lets_go, .blackbg_link, .blackbg_pass").each(function () {
+			// 	$(this).removeClass("blackbg_lets_go").removeClass("blacktc_lets_go").removeClass("blackbg_link").removeClass("blackbg_pass");
+			// });
+			revertCustomBgMode();
+			activateCustomBgModeIfPageSelectedOrItEverywhere();
+			break;
 
 		case "activateBlackBgMode":
 			pageEnabled = true;
@@ -175,16 +227,15 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 
 	// Load settings
-	chrome.storage.sync.get(["itEverywhere", "sitesEnabled", "sitesBackground", "sitesText", "sitesULinks", "sitesVLinks"], function (result) {
-
-		if (result.itEverywhere === true)
-			itEverywhere = true;
+	chrome.storage.sync.get(["allSites", "sitesEnabled", "sitesBackground", "sitesText", "sitesULinks", "sitesVLinks"], function (result) {
 
 		let domain = window.location.host.replace("www.", "");
 		let hrefNoOrigin = window.location.href.replace(window.location.origin, "").substring(1); // Remove first slash (/)
 
-		let sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks;
-		[sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] = [result.sitesEnabled, result.sitesBackground, result.sitesText, result.sitesULinks, result.sitesVLinks];
+		let allSites, sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks;
+		[allSites, sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] = [result.allSites, result.sitesEnabled, result.sitesBackground, result.sitesText, result.sitesULinks, result.sitesVLinks];
+
+		allSitesSettings = allSites.split(HAPPY_FACE_SEPARATOR);
 
 		if (sitesEnabled) {
 
@@ -215,14 +266,43 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 			[siteEnabled, siteBackground, siteText, siteULinks, siteVLinks] = 
 			[sitesEnabled[siteIndex].split("/blv_ck_bg/"), sitesBackground[siteIndex].split("/blv_ck_bg/"), sitesText[siteIndex].split("/blv_ck_bg/"), sitesULinks[siteIndex].split("/blv_ck_bg/"), sitesVLinks[siteIndex].split("/blv_ck_bg/")];
 
-			if (siteEnabled[1] === "enabled")
-				pageEnabled = true;
+			enableState = siteEnabled[1];
+			itEverywhere = allSitesSettings[0] === "enabled";
+
+			switch (enableState) {
+				case ENABLE_NEVER:
+					return;
+			
+				case ENABLE_ONLY_EVERYWHERE:
+					if (itEverywhere) {
+						[siteBackground, siteText, siteULinks, siteVLinks] = 
+						[allSitesSettings[1].split("/blv_ck_bg/"), allSitesSettings[2].split("/blv_ck_bg/"), allSitesSettings[3].split("/blv_ck_bg/"), allSitesSettings[4].split("/blv_ck_bg/")];
+
+						pageEnabled = true;
+					}
+					else
+						return;
+					break;
+
+				case ENABLE_CUSTOM:
+					[siteBackground, siteText, siteULinks, siteVLinks] = 
+					[sitesBackground[siteIndex].split("/blv_ck_bg/"), sitesText[siteIndex].split("/blv_ck_bg/"), sitesULinks[siteIndex].split("/blv_ck_bg/"), sitesVLinks[siteIndex].split("/blv_ck_bg/")];
+					
+					pageEnabled = true;
+					break;
+			}
+
+			// Data's positions differ depeding on the used array
+			let bgMode, textMode, uLinksMode, vLinksMode, bgValue, textValue, uLinksValue, vLinksValue;
+			[bgMode, textMode, uLinksMode, vLinksMode, bgValue, textValue, uLinksValue, vLinksValue] = enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere ? 
+			[siteBackground[0], siteText[0], siteULinks[0], siteVLinks[0], siteBackground[1], siteText[1], siteULinks[1], siteVLinks[1]] :
+			[siteBackground[1], siteText[1], siteULinks[1], siteVLinks[1], siteBackground[2], siteText[2], siteULinks[2], siteVLinks[2]];
 
 			// Background color
-			switch (siteBackground[1]) {
+			switch (bgMode) {
 
 				case COLOR_MODE:
-					customBgColor_HEX = `#${siteBackground[2]}`
+					customBgColor_HEX = `#${bgValue}`
 					break;
 
 				case RANDOM_MODE:
@@ -230,7 +310,7 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 					break;
 
 				case CYCLE_MODE:
-					bgCycle_ms = siteBackground[2];
+					bgCycle_ms = bgValue;
 					bgCycle_interval = true;
 					break;
 
@@ -244,10 +324,10 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 				customBgColor_RGB = hexToRgb(customBgColor_HEX);
 				
 			// Text color
-			switch (siteText[1]) {
+			switch (textMode) {
 
 				case COLOR_MODE:
-					customTextColor_HEX = `#${siteText[2]}`
+					customTextColor_HEX = `#${textValue}`
 					break;
 
 				case RANDOM_MODE:
@@ -255,7 +335,7 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 					break;
 
 				case CYCLE_MODE:
-					textCycle_ms = siteText[2];
+					textCycle_ms = textValue;
 					textCycle_interval = true;
 					break;
 				
@@ -269,10 +349,10 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 				customTextColor_RGB = hexToRgb(customTextColor_HEX);
 
 			// Unvisited links color
-			switch (siteULinks[1]) {
+			switch (uLinksMode) {
 
 				case COLOR_MODE:
-					customULinkColor_HEX = `#${siteULinks[2]}`
+					customULinkColor_HEX = `#${uLinksValue}`
 					break;
 
 				case RANDOM_MODE:
@@ -280,7 +360,7 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 					break;
 
 				case CYCLE_MODE:
-					ulinkCycle_ms = siteULinks[2];
+					ulinkCycle_ms = uLinksValue;
 					ulinkCycle_interval = true;
 					break;
 
@@ -295,10 +375,10 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 				customULinkColor_RGB = hexToRgb(customULinkColor_HEX);
 				
 			// Visited links color
-			switch (siteVLinks[1]) {
+			switch (vLinksMode) {
 
 				case COLOR_MODE:
-					customVLinkColor_HEX = `#${siteVLinks[2]}`
+					customVLinkColor_HEX = `#${vLinksValue}`
 					break;
 
 				case RANDOM_MODE:
@@ -306,7 +386,7 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 					break;
 
 				case CYCLE_MODE:
-					vlinkCycle_ms = siteVLinks[2];
+					vlinkCycle_ms = vLinksValue;
 					vlinkCycle_interval = true;
 					break;
 
@@ -319,7 +399,7 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 			if (customVLinkColor_HEX)
 				customVLinkColor_RGB = hexToRgb(customVLinkColor_HEX);
 
-			if (pageEnabled || itEverywhere)
+			if (pageEnabled)
 				initCustomBgMode();
 
 		}

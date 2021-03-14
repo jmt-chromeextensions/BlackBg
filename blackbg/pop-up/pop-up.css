@@ -398,8 +398,8 @@ background-color: #555;
 .switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 58px;
+  height: 29px;
 }
 
 .switch input { 
@@ -423,8 +423,8 @@ background-color: #555;
 .slider:before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
+  height: 20px;
+  width: 20px;
   left: 4px;
   bottom: 4px;
   background-color: black;
@@ -441,9 +441,58 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(13px);
-  -ms-transform: translateX(13px);
-  transform: translateX(13px);
+  -webkit-transform: translateX(30px);
+  -ms-transform: translateX(30px);
+  transform: translateX(30px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 15px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Radio buttons with images (http://jsfiddle.net/La8wQ) */
+
+.cc-selector input{
+  margin:0;padding:0;
+  -webkit-appearance:none;
+     -moz-appearance:none;
+          appearance:none;
+}
+
+.enable_never {background-image:url("../icons/empty-circle.png");}
+.enable_only_everywhere {background-image:url("../icons/semi-circle_2.png");}
+.enable_custom {background-image:url("../icons/filled-circle.png");}
+
+.cc-selector input:active +.drinkcard-cc{opacity: .9;}
+.cc-selector input:checked +.drinkcard-cc{
+  -webkit-filter: none;
+     -moz-filter: none;
+          filter: none;
+}
+
+.drinkcard-cc{
+  cursor:pointer;
+  background-size:contain;
+  background-repeat:no-repeat;
+  display:inline-block;
+  width:18px;height:18px;
+  -webkit-transition: all 100ms ease-in;
+     -moz-transition: all 100ms ease-in;
+          transition: all 100ms ease-in;
+  -webkit-filter: brightness(1.8) grayscale(1) opacity(.5);
+     -moz-filter: brightness(1.8) grayscale(1) opacity(.5);
+          filter: brightness(1.8) grayscale(1) opacity(.5);
+}
+
+.drinkcard-cc:hover{
+  -webkit-filter: brightness(1.2) grayscale(1) opacity(1);
+     -moz-filter: brightness(1.2) grayscale(1) opacity(1);
+          filter: brightness(1.2) grayscale(1) opacity(1);
 }
 
 /* Tooltip https://www.w3schools.com/css/tryit.asp?filename=trycss_tooltip_arrow_top */
@@ -476,14 +525,7 @@ input:checked + .slider:before {
   visibility: visible;
 }
 
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
 
-.slider.round:before {
-  border-radius: 50%;
-}
 
 /* Momentary color change */
 

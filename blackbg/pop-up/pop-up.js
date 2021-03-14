@@ -13,22 +13,28 @@ const RANDOM_MODE = "random";
 const CYCLE_MODE = "cycle";
 const NOCOLOR_MODE = "nocolor";
 
+const ENABLE_NEVER = "never";
+const ENABLE_ONLY_EVERYWHERE = "everywhere";
+const ENABLE_CUSTOM = "custom";
+
 const COLOR_MSG = "setSiteColorForPreview";
 const CYCLE_MSG = "startCycleForPreview";
 const CYCLE_SPEED_MSG = "setCycleSpeedForPreview";
 const NO_COLOR_MSG = "noColorForPreview";
 const ACTIVATE_MSG = "activateBlackBgMode";
 const DEACTIVATE_MSG = "deactivateBlackBgMode";
+const CHANGE_STATE_MSG = "changeState";
 const SAVE_PREVIEW_MSG = "savePreview";
-const STOP_PREVIEW_MSG = "STOP_PREVIEW_MSG";
+const STOP_PREVIEW_MSG = "stopPreview";
 const APPLY_ALL_MSG = "applyOnAllPages";
 const NOT_APPLY_ALL_MSG = "notApplyOnAllPages";
 
 const MODE_MESSAGES = new Map([[COLOR_MODE, COLOR_MSG], [RANDOM_MODE, COLOR_MSG], [CYCLE_MODE, CYCLE_MSG], [NOCOLOR_MODE, NO_COLOR_MSG]]);
 
-const PIN_ICON = `<input style="display: none; position: relative; bottom: 29px; left: 4px;" id="save_randomColor" type="image" src="../icons/pin.png" title="Delete settings"></input>`;
+const PIN_ICON = `<input style="display: none; position: relative; bottom: 29px; left: 4px;" id="save_randomColor" type="image" src="../icons/pin_2.png" title="Delete settings"></input>`;
 
-const SAVED_PAGE_DIV_TEMPLATE =
+// Not used
+const SAVED_PAGE_DIV_TEMPLATE = 
 `<div class="saved_page" id="page_DOMAIN_WITH_FORMAT">
     <a href="http://DOMAIN_NO_WWW" class="site_domain">DOMAIN_NO_WWW</a>
     <div class="right">
@@ -43,12 +49,25 @@ const SAVED_PAGE_DIV_TEMPLATE =
         <input type="image" src="../icons/delete.png" id="remove_DOMAIN_WITH_FORMAT">
     </div>
 </div>`
+//
+
+const ENABLE_RADIO_BUTTONS =
+`<div class="cc-selector">
+    <input id="enable-never_DOMAIN_WITH_FORMAT||url||__URL__" type="radio" name="enable_DOMAIN_WITH_FORMAT||url||__URL__" data-state=${ENABLE_NEVER}>
+    <label class="drinkcard-cc enable_never" for="enable-never_DOMAIN_WITH_FORMAT||url||__URL__" title="Never apply any colors/modes on this site."></label>
+
+    <input id="enable-everywhere_DOMAIN_WITH_FORMAT||url||__URL__" type="radio" name="enable_DOMAIN_WITH_FORMAT||url||__URL__" data-state=${ENABLE_ONLY_EVERYWHERE}>
+    <label class="drinkcard-cc enable_only_everywhere" for="enable-everywhere_DOMAIN_WITH_FORMAT||url||__URL__" title="Apply only 'everywhere' colors/modes (defined at the very top) on this site."></label>
+
+    <input id="enable-custom_DOMAIN_WITH_FORMAT||url||__URL__" type="radio" name="enable_DOMAIN_WITH_FORMAT||url||__URL__" data-state=${ENABLE_CUSTOM}>
+    <label class="drinkcard-cc enable_custom" for="enable-custom_DOMAIN_WITH_FORMAT||url||__URL__" title="Apply custom colors/modes (defined to the right) on this site."></label>
+</div>`
 
 const SAVED_PAGE_TR_TEMPLATE = 
 `<tr class="saved_page" id="page_DOMAIN_WITH_FORMAT||url||__URL__" data-domain="DOMAIN_WITH_FORMAT" data-url="__URL__" style="display:none">
     <td><a href="http://DOMAIN_NO_WWW" class="site_domain" title="http://DOMAIN_NO_WWW">DOMAIN_NO_WWW</a></td>
     <td><a href="http://DOMAIN_NO_WWW/__URL__" class="site_url" title="http://DOMAIN_NO_WWW/__URL__">__URL__</a></td>
-    <td><label class="switch" id="lbl_DOMAIN_WITH_FORMAT||url||__URL__"><input type="checkbox" id="switch_DOMAIN_WITH_FORMAT||url||__URL__" data-site="DOMAIN_NO_WWW||url||__URL__"><span class="slider round"></span></label></td>
+    <td>${ENABLE_RADIO_BUTTONS}</td>
     <td><input id="color_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${BACKGROUND}></td>
     <td><input id="color_text_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${TEXT}></td>
     <td><input id="color_ulink_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${ULINK}></td>
@@ -228,7 +247,7 @@ $(document).ready(function () {
 
                 let site = "all";
 
-                let siteEnabled = allSitesSettings[0].split("/blv_ck_bg/")[1] === "enabled";
+                let siteEnabled = allSitesSettings[0] === "enabled";
                 let siteBackground = allSitesSettings[1].split("/blv_ck_bg/");
                 let siteText = allSitesSettings[2].split("/blv_ck_bg/");
                 let siteULinks = allSitesSettings[3].split("/blv_ck_bg/");
@@ -255,7 +274,7 @@ $(document).ready(function () {
                     let isUrl = site.includes("||url||");
                     site = { domain: isUrl ? site.split("||url||")[0] : site, url: isUrl ? site.split("||url||")[1] : "" };
 
-                    let siteEnabled = sitesEnabled[i].split("/blv_ck_bg/")[1] === "enabled";
+                    let siteEnabled = sitesEnabled[i].split("/blv_ck_bg/")[1];
                     let siteBackground = sitesBackground[i].split("/blv_ck_bg/");
                     let siteText = sitesText[i].split("/blv_ck_bg/");
                     let siteULinks = sitesULinks[i].split("/blv_ck_bg/");
@@ -638,8 +657,25 @@ function addSelectedPageToPopup(site, enabled, background, text, ulink, vlink) {
 
 function initializeInputs(site, domain, enabled, background, text, ulink, vlink) {
 
-    if (enabled)
-        $(`[id='switch_${site}']`)[0].checked = true;
+    switch (enabled) {
+        case ENABLE_NEVER:
+            $(`[id='enable-never_${site}']`)[0].checked = true;
+            break;
+        
+        case ENABLE_ONLY_EVERYWHERE:
+            $(`[id='enable-everywhere_${site}']`)[0].checked = true;
+            break;
+
+        case ENABLE_CUSTOM:
+            $(`[id='enable-custom_${site}']`)[0].checked = true;
+            break;
+        
+        case true:
+            $("#switch_all")[0].checked = true;    
+
+        default:
+            break;
+    }
     
     $(`[id='page_${site}']`).show("fast");
 
@@ -678,9 +714,6 @@ function initializeInputs(site, domain, enabled, background, text, ulink, vlink)
         else if (vlink.mode === CYCLE_MODE)
             $(`[id='color_vlink_${site}']`).val(vlink.value).attr("data-cycle_speed", vlink.value);
 
-    // Save enabled/disabled option for selected pages on switch interaction
-    $(`[id='switch_${site}']`).bind('change', (delayFunction(enableDisablePage, 1)));
-
     // Open palette when any of the inputs is clicked
     
     // $(`#color_${site}, #color_text_${site}, #color_ulink_${site}, #color_vlink_${site}`).click(openPaletteModal);
@@ -688,7 +721,14 @@ function initializeInputs(site, domain, enabled, background, text, ulink, vlink)
         onColorInputClick(event, this);
     });
 
-    if (site === "all") return;
+    if (site === "all") {
+        // Save enabled/disabled option for selected pages on switch interaction
+        $("#switch_all").bind('change', (delayFunction(enableDisableEverywhere, 1)));
+        return;
+    }
+
+    // Change enable state
+    $(`[name='enable_${site}']`).change((e) => changeEnableState(e.currentTarget, site));
 
     // Open site in new tab when URL is clicked
     $(`[id='page_${site}'] .site_domain`).click(openSiteInNewTab);
@@ -797,16 +837,26 @@ function getCurrentRandomColor(site, selection) {
 
 }
 
-function enableDisablePage() {
+function enableDisableEverywhere() {
 
-    let enabled = this.checked;
-    let site = $(this).attr("data-site");
+    let allSitesSettings = allSites.split(HAPPY_FACE_SEPARATOR);
+    let enable = $(this)[0].checked;
+
+    allSites = [(enable ? "enabled" : "disabled"), allSitesSettings.slice(1, allSitesSettings.length).join(HAPPY_FACE_SEPARATOR)].join(HAPPY_FACE_SEPARATOR);
+
+    saveSites('', true);
+    // sendMessageToContentScripts(enabled ? ACTIVATE_MSG : DEACTIVATE_MSG, site);
+}
+
+function changeEnableState(input, site) {
+
+    let state = $(input).attr("data-state");
     let index = getSiteIndex(site, ENABLED);
 
-    sitesEnabled[index] = sitesEnabled[index].split('/blv_ck_bg/')[0] + '/blv_ck_bg/' + ((enabled) ? 'enabled' : 'disabled');
+    sitesEnabled[index] = [site, state].join("/blv_ck_bg/");
 
     saveSites(ENABLED);
-    sendMessageToContentScripts(enabled ? ACTIVATE_MSG : DEACTIVATE_MSG, site);
+    sendMessageToContentScripts(CHANGE_STATE_MSG, site);
 
 }
 
@@ -871,9 +921,9 @@ function deleteSelectedPage() {
     sendMessageToContentScripts(DEACTIVATE_MSG, site);
 }
 
-function saveSites(type, allSites) {
+function saveSites(type, allSitesSettings) {
 
-    if (allSites) {
+    if (allSitesSettings) {
         chrome.storage.sync.set(
             {"allSites": allSites},
             function () { console.log();
@@ -916,21 +966,35 @@ function saveSites(type, allSites) {
 }
 
 function sendMessageToContentScripts(action, site, selection, value) {
-    let urls = [];
 
-    if (site.domain) 
-        site = [site.domain, site.url];
-    else
-        site = site.split("||url||");
+    if (site === "all") { // Send to all active tabs (action on general settings)
+
+        chrome.tabs.query({ active: true }, function (tabs) {
+            for (var i = 0, length = tabs.length; i < length; i++) {
+                chrome.tabs.sendMessage(tabs[i].id, { site: site, action: action + "_ALL", selection:selection, value: value  }, function () { });
+            }
+        });
+
+    } else { 
+
+        let urls = [];
     
-    urls.push( site.length > 1 ? `http://*.${site[0]}/${site[1]}` : `http://*.${site[0]}/*` );
-    urls.push( site.length > 1 ? `https://*.${site[0]}/${site[1]}` : `https://*.${site[0]}/*` );
+        if (site.domain) 
+            site = [site.domain, site.url];
+        else
+            site = site.split("||url||");
+        
+        urls.push( site.length > 1 ? `http://*.${site[0]}/${site[1]}` : `http://*.${site[0]}/*` );
+        urls.push( site.length > 1 ? `https://*.${site[0]}/${site[1]}` : `https://*.${site[0]}/*` );
+    
+        chrome.tabs.query({ url: urls }, function (tabs) {
+            for (var i = 0, length = tabs.length; i < length; i++) {
+                chrome.tabs.sendMessage(tabs[i].id, { site: site, action: action, selection:selection, value: value  }, function () { });
+            }
+        });
 
-    chrome.tabs.query({ url: urls }, function (tabs) {
-        for (var i = 0, length = tabs.length; i < length; i++) {
-            chrome.tabs.sendMessage(tabs[i].id, { site: site, action: action, selection:selection, value: value  }, function () { });
-        }
-    });
+    }
+
 }
 
 function getSiteIndex(site, selection) {
