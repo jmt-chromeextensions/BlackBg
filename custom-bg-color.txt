@@ -2,33 +2,34 @@ Custom Background Color
 
 ADAPTAR info de storage
 
-Botones para reemplazar colores y copiar color
-Mostrar color que ha salido random
-Poder guardar color random
-Selección de it_everywhere
+Botones para reemplazar colores y copiar color OK
+Mostrar color que ha salido random OK
+Poder guardar color random OK
+Selección de it_everywhere OK
 
-Añadir URL
-Agrupar por dominio/URL
-Textos de title de botones en español
+Añadir URL OK
+Agrupar por dominio/URL OK
+Textos de title de botones en español OK
 mapear colores por palabra
 moverse con flechas
-Opción de no tocar 
-are you sure quitar link
+Opción de no tocar OK
+are you sure quitar link OK
 Cambiar guiones por otra cosa porque los dominios pueden tener guiones
 Quitar opción de cycle en content-script al borrar desde pop-up
-Tooltip de velocidad en cycle_speed
-Ajustar query al mandar mensajes desde pop-up
-Colores RGB raros (se puede transparencia con hexadecimal se añaden dos números parese)
-Traducir textos
+Tooltip de velocidad en cycle_speed OK
+Ajustar query al mandar mensajes desde pop-up OK
+Colores RGB raros (se puede transparencia con hexadecimal se añaden dos números parese) OK
+Traducir textos OK
 Investigar por qué el ciclo va muy lento al principio pero luego se activa
 Investigar caso de las barras de VOD de twitch con copyright que no se ve con NOCOLOR
-tooltip en inputs para decir qué color es
-Cambiar descripción
+tooltip en inputs para decir qué color es OK
+Cambiar descripción 
 Mensaje cuando no se ha añadido todavía ninguna página
-Cambiar domain por host por lo menos en las vistas 
+Cambiar domain por host por lo menos en las vistas
 Al borrar/quitar enable mirar si hay configuración de host (puede interesar no aplicarla)
 Al añadir por URL si ya hay de host empezar con configuración de host
-En Soundcloud al pasar de una canción a otra se pone blanco el fondo
+En Soundcloud al pasar de una canción a otra se pone blanco el fondo OK
 keyboard-focusable
+Hacer que el pop-up de delete se oculte al pulsar fuera y oscurecer lo demás OK
 
 #03152E

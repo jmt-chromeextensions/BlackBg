@@ -1,10 +1,3 @@
-const hexToRgb = hex =>
-  `rgb (${hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
-	,(m, r, g, b) => '#' + r + r + g + g + b + b)
-.substring(1).match(/.{2}/g)
-.map(x => parseInt(x, 16))
-.join(", ")})`
-
 const HAPPY_FACE_SEPARATOR = " (\u273F\u25E0\u203F\u25E0\) "; // (✿◠‿◠)
 
 const LINKS_STYLESHEET_ID = "blv_ck_bg_links"
@@ -607,7 +600,8 @@ function setCssProp_storePropInDataAttributeIfExistant (elem, prop, value, impor
 	}
 
 	if (important)
-		elem.style.setProperty(prop, value, 'important')
+		// elem.style.setProperty(prop, value, 'important')
+		elem.style.cssText += ` ${prop}: ${value.startsWith('#') ? "" : "#"}${value} !important;`;
 	else
 		elem.style.setProperty(prop, value)
 }

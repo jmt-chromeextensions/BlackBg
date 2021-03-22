@@ -1,11 +1,160 @@
 {
     "lbl_blacklist": {
-        "message": "La Lista Negra"
+        "message": "Sitios con ajustes personalizados"
     },
 
-    "title_add_button": {
-        "message": "Añadir página actual a la lista."
+
+
+    "title_add_domain_button": {
+        "message": "Añadir dominio del sitio actual a la lista."
     },
+
+    "title_add_url_button": {
+        "message": "Añadir URL completa del sitio actual a la lista."
+    },
+    
+    "title_copy_button": {
+        "message": "Copiar ajuste de color o modo de un sitio a otro."
+    },
+
+    "lbl_select_copy_from": {
+        "message": "Selecciona el color o modo que quieres copiar."
+    },
+
+    "lbl_select_copy_to": {
+        "message": "Ahora selecciona los colores o modos donde quieres aplicar la copia."
+    },
+
+    "title_cancel_copy_button": {
+        "message": "Cancelar copia."
+    },
+
+
+
+    "lbl_domain_column": {
+        "message": "Dominio"
+    },
+
+    "lbl_path_column": {
+        "message": "Ruta"
+    },
+
+    "lbl_enable_column": {
+        "message": "Activar"
+    },
+
+    "lbl_background_column": {
+        "message": "Fondos"
+    },
+
+    "lbl_text_column": {
+        "message": "Texto"
+    },
+
+    "lbl_unvisited_links_column": {
+        "message": "Links no visitados"
+    },
+
+    "lbl_visited_links_column": {
+        "message": "Links visitados"
+    },
+
+    "lbl_delete_column": {
+        "message": "Eliminar"
+    },
+
+
+    
+    "lbl_enable_everywhere_info": {
+        "message": "Si habilitas estos ajustes se aplicarán en todos los sitios en los que no hayas definido ajustes personalizados."
+    },
+
+    "lbl_everywhere": {
+        "message": "Todos los sitios"
+    },
+
+    "title_enable_never": {
+        "message": "No aplicar nunca ningún color o modo en este sitio."
+    },
+
+    "title_enable_everywhere": {
+        "message": "Aplicar solo los colores o modos generales (definidos arriba del todo) en este sitio."
+    },
+
+    "title_enable_custom": {
+        "message": "Aplicar colores o modos personalizados, definidos a la derecha, en este sitio."
+    },
+
+
+
+    "title_input_cycle": {
+        "message": "Ciclos de color a través del espectro RGB."
+    },
+
+    "title_input_random": {
+        "message": "Nuevo color aleatorio cada vez que se carga el sitio."
+    },
+
+    "title_input_nocolor": {
+        "message": "No se modifica el color original."
+    },
+
+    "title_delete_site": {
+        "message": "Eliminar los ajustes de este sitio y dejar de aplicar colores o modos en él."
+    },
+
+
+
+    "lbl_popup_color_selector_choose": {
+        "message": "Selecciona un color o un modo para los"
+    },
+
+    "lbl_popup_color_selector_all_sites": {
+        "message": "Todos los sitios"
+    },
+
+    "lbl_popup_color_selector_background": {
+        "message": "fondos"
+    },
+
+    "lbl_popup_color_selector_text": {
+        "message": "textos"
+    },
+
+    "lbl_popup_color_selector_ulink": {
+        "message": "links no visitados"
+    },
+
+    "lbl_popup_color_selector_vlink": {
+        "message": "links visitados"
+    },
+
+    "lbl_popup_color_selector_optimal_cycle_speed": {
+        "message": "Funcionamiento óptimo: 1 ciclo en _SECONDS_ segundos."
+    },
+
+
+
+    "lbl_delete_confirmation_message": {
+        "message": "¿Estás seguro de que quieres eliminar los ajustes de este sitio? Los colores originales serán mostrados de nuevo."
+    },
+
+    "title_delete_confirm": {
+        "message": "Eliminar ajustes"
+    },
+
+    "title_delete_cancel": {
+        "message": "No eliminar ajustes"
+    },
+
+
+
+
+
+
+
+
+
     "title_settings_button": {
         "message": "Abrir pestaña de configuración."
     },

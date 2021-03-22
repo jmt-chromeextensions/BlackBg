@@ -125,7 +125,7 @@ function paintRandomIcon(e) {
 function calculateOptimalCycleRateAndSetInputTitle () {
     let estimatedSeconds = (255 * 6 * parseInt($("#cycle_speed").val())) / 1000;
     let nearestTen = Math.ceil(estimatedSeconds / 10) * 10;
-    $("#cycle_speed").attr("title", `Optimal perfomance: 1 cycle in ${nearestTen} seconds.`);
+    $("#cycle_speed").attr("title", TRANSLATIONS.get("lbl_popup_color_selector_optimal_cycle_speed").replace("_SECONDS_", nearestTen));
 }
 
 // #endregion
@@ -140,6 +140,8 @@ function getSelectionAndSetIt() {
 
     let site = input.attr("data-site");
     let color = $(".sp-input").val().replace('#', '');
+    if (color.startsWith("rgba")) color = RGBAToHexA(color);
+    color = color.replace('#', '');
     let cycleInterval = $("#cycle_speed").val();
 
     let selection = input.attr("data-selection");
@@ -287,7 +289,7 @@ function getSelectionAndSetIt() {
 
     // Set input's data or icon
     if (mode === COLOR_MODE)
-        input.val(`#${color}`);
+        input.attr("data-color", color).val(`#${color.substring(0,6)}`); // Remove transparency value
     else if (mode === CYCLE_MODE)
         input.val(cycleInterval).attr("data-cycle_speed", cycleInterval);
         

@@ -1,5 +1,22 @@
 // Manage interaction with the popup and the selected pages list.
 
+const TRANSLATIONS = new Map([["title_enable_never", getLocalizedText("title_enable_never")],
+                             ["title_enable_everywhere", getLocalizedText("title_enable_everywhere")],
+                             ["title_enable_custom", getLocalizedText("title_enable_custom")],
+                             ["title_delete_site", getLocalizedText("title_delete_site")],
+                             ["lbl_select_copy_to", getLocalizedText("lbl_select_copy_to")],
+                             ["lbl_popup_color_selector_all_sites", getLocalizedText("lbl_popup_color_selector_all_sites")],
+                             ["lbl_popup_color_selector_choose", getLocalizedText("lbl_popup_color_selector_choose")],
+                             ["lbl_popup_color_selector_all_sites", getLocalizedText("lbl_popup_color_selector_all_sites")],
+                             ["lbl_popup_color_selector_background", getLocalizedText("lbl_popup_color_selector_background")],
+                             ["lbl_popup_color_selector_text", getLocalizedText("lbl_popup_color_selector_text")],
+                             ["lbl_popup_color_selector_ulink", getLocalizedText("lbl_popup_color_selector_ulink")],
+                             ["lbl_popup_color_selector_vlink", getLocalizedText("lbl_popup_color_selector_vlink")],
+                             ["title_input_random", getLocalizedText("title_input_random")],
+                             ["title_input_cycle", getLocalizedText("title_input_cycle")],
+                             ["title_input_nocolor", getLocalizedText("title_input_nocolor")],
+                             ["lbl_popup_color_selector_optimal_cycle_speed", getLocalizedText("lbl_popup_color_selector_optimal_cycle_speed")]]);
+
 const HAPPY_FACE_SEPARATOR = " (\u273F\u25E0\u203F\u25E0\) "; // (✿◠‿◠)
 
 const ENABLED = "enabled";
@@ -46,7 +63,7 @@ const SAVED_PAGE_DIV_TEMPLATE =
         <input id="color_ulink_DOMAIN_WITH_FORMAT" type="color" data-domain="DOMAIN_WITH_FORMAT" data-selection=${ULINK}>
         <input id="color_vlink_DOMAIN_WITH_FORMAT" type="color" data-domain="DOMAIN_WITH_FORMAT" data-selection=${VLINK}>
 
-        <input type="image" src="../icons/delete.png" id="remove_DOMAIN_WITH_FORMAT">
+        <input id="remove_DOMAIN_WITH_FORMAT" type="image" src="../icons/delete.png">
     </div>
 </div>`
 //
@@ -54,13 +71,13 @@ const SAVED_PAGE_DIV_TEMPLATE =
 const ENABLE_RADIO_BUTTONS =
 `<div class="cc-selector">
     <input id="enable-never_DOMAIN_WITH_FORMAT||url||__URL__" type="radio" name="enable_DOMAIN_WITH_FORMAT||url||__URL__" data-state=${ENABLE_NEVER}>
-    <label class="drinkcard-cc enable_never" for="enable-never_DOMAIN_WITH_FORMAT||url||__URL__" title="Never apply any colors/modes on this site."></label>
+    <label class="drinkcard-cc enable_never" for="enable-never_DOMAIN_WITH_FORMAT||url||__URL__" title="${TRANSLATIONS.get("title_enable_never")}"></label>
 
     <input id="enable-everywhere_DOMAIN_WITH_FORMAT||url||__URL__" type="radio" name="enable_DOMAIN_WITH_FORMAT||url||__URL__" data-state=${ENABLE_ONLY_EVERYWHERE}>
-    <label class="drinkcard-cc enable_only_everywhere" for="enable-everywhere_DOMAIN_WITH_FORMAT||url||__URL__" title="Apply only 'everywhere' colors/modes (defined at the very top) on this site."></label>
+    <label class="drinkcard-cc enable_only_everywhere" for="enable-everywhere_DOMAIN_WITH_FORMAT||url||__URL__" title="${TRANSLATIONS.get("title_enable_everywhere")}"></label>
 
     <input id="enable-custom_DOMAIN_WITH_FORMAT||url||__URL__" type="radio" name="enable_DOMAIN_WITH_FORMAT||url||__URL__" data-state=${ENABLE_CUSTOM}>
-    <label class="drinkcard-cc enable_custom" for="enable-custom_DOMAIN_WITH_FORMAT||url||__URL__" title="Apply custom colors/modes (defined to the right) on this site."></label>
+    <label class="drinkcard-cc enable_custom" for="enable-custom_DOMAIN_WITH_FORMAT||url||__URL__" title="${TRANSLATIONS.get("title_enable_custom")}"></label>
 </div>`
 
 const SAVED_PAGE_TR_TEMPLATE = 
@@ -72,7 +89,7 @@ const SAVED_PAGE_TR_TEMPLATE =
     <td><input id="color_text_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${TEXT}></td>
     <td><input id="color_ulink_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${ULINK}></td>
     <td><input id="color_vlink_DOMAIN_WITH_FORMAT||url||__URL__" type="color" data-site="DOMAIN_NO_WWW||url||__URL__" data-selection=${VLINK}></td>
-    <td><input type="image" src="../icons/delete.png" id="remove_DOMAIN_WITH_FORMAT||url||__URL__"></td>
+    <td><input id="remove_DOMAIN_WITH_FORMAT||url||__URL__" type="image" src="../icons/delete.png" title="${TRANSLATIONS.get("title_delete_site")}"></td>
 </tr>`
 
 const DEFAULT_BACKGROUND = { mode: COLOR_MODE, value: "000000" }
@@ -171,7 +188,11 @@ $(document).ready(function () {
     }).on('move.spectrum', function(e, color) {
         if (!previewColorJustSet) {
             previewColorJustSet = true;
-            if (color) siteColorPreview(color.toHexString());
+            if (color) 
+                if (color._a != 1) // RGBA color (transparency)
+                    siteColorPreview(RGBAToHexA(color.toRgbString()).replace("#", ""));
+                else
+                    siteColorPreview(color.toHexString());
             setTimeout(() => {
                 previewColorJustSet = false;
             }, 100);
@@ -224,19 +245,30 @@ $(document).ready(function () {
     // Delete pop-up buttons
     $("#acceptBtn_delete").click(deleteSelectedPage);
     $("#cancelBtn_delete").click(()=> {
-        $("#delete_confirm").hide();
-    });
+        let id = $("[data-delete]").attr("id").replace("page_", "");
+        $(`[id='remove_${id}']`).focus();
+        $("#delete_modal").hide();
+    })
+
+    setNextFocusElement($("#cancelBtn_delete"), $("#acceptBtn_delete"));
 
     // Hide palette when the user clicks out of it
-    $("body").mousedown(function(event) {
+    $("#color_selector_modal").mousedown(function(event) {
         if ($("#color_selector").is(":visible"))
             if ($("#color_selector, .sp-container").find(event.target).length == 0 && !$(event.target).is($("#color_selector, .sp-container, input[data-selection]"))) {
                 closePaletteModal();
         }
     });
 
-    // Show the pages that are currently selected
+    // Hide deletion's pop-up
+    $("#delete_modal").mousedown(function(event) {
+        if ($("#delete_confirm").is(":visible"))
+            if ($("#delete_confirm").find(event.target).length == 0 && !$(event.target).is($("#delete_confirm"))) {
+                $("#delete_modal").hide();
+        }
+    });
 
+    // Show the pages that are currently selected
     setTimeout(() => {
         chrome.storage.sync.get(["allSites", "sitesEnabled", "sitesBackground", "sitesText", "sitesULinks", "sitesVLinks"], function (result) {
 
@@ -364,7 +396,7 @@ function onColorInputClick (event, input) {
         case 1:
             $(".selected_from_copy").removeClass("selected_from_copy");
             $(input).addClass("selected_from_copy");
-            $(".copy_guide_text").text("Now select the colors/modes where you want to apply the copy.");
+            $(".copy_guide_text").text(TRANSLATIONS.get("lbl_select_copy_to"));
 
             copyStep = 2;
             funCounter = 0;
@@ -411,21 +443,22 @@ function openPaletteModal(input) {
     $(input).attr("data-palette", "open");
 
     // Show what selection is being made in pop-up
-    $(".popup_title h2").text(site).attr("href", `http://${site}`);
-    $(".popup_title h3").text(`Choose a color for ${selection}.`);
+    if (site === "all")
+        $(".popup_title h2").text(TRANSLATIONS.get("lbl_popup_color_selector_all_sites")).removeAttr("href").attr("style", "cursor:default; text-decoration:none;");
+    else
+        $(".popup_title h2").text(site).attr("href", `http://${site}`).removeAttr("style");
+
+    $(".popup_title h3").text(`${TRANSLATIONS.get("lbl_popup_color_selector_choose")} ${TRANSLATIONS.get(`lbl_popup_color_selector_${selection}`)}.`);
 
     // Set palette to site's custom color
     if ($(input).val() && mode === COLOR_MODE)
-        $("#showInput").spectrum("set", $(input).val());
+        $("#showInput").spectrum("set", $(input).attr("data-color").length == 8 ? `${hexAToRGBA('#' + $(input).attr("data-color"))}` : `#${$(input).attr("data-color")}`);
     else if (mode === NOCOLOR_MODE)
         $(".sp-input").val("No selected color.")
     else if (mode === CYCLE_MODE)
         $("#cycle_speed").val($(input).attr("data-cycle_speed"));
 
-    // Add semi-transparency to everything outside the pop-up
-     $("#content, header").addClass("semi_transparent");
-
-    $("#color_selector").show();
+    $("#color_selector_modal").show();
     notHidePalette = true;
 
     visualizeSelectedMode(mode);
@@ -435,6 +468,9 @@ function openPaletteModal(input) {
     setTimeout(() => {
         // Adjust palette's position
         $("#showInput").click();
+        
+        // Set focus on pop-up
+        $(".text_ellipsis").focus();
 
         // let topDiff = parseInt($(".sp-container").css("top").replace("px", "")) - $("body")[0].scrollTop;
         // $(".sp-container").css("position", "fixed").css("top", topDiff);
@@ -460,10 +496,9 @@ function closePaletteModal(saveChanges) {
 
     // Hide palette and modal
     cycleSelected = false;
-    $("input[data-palette='open']").removeAttr("data-palette");
+    $("input[data-palette='open']").focus().removeAttr("data-palette");
     $("#showInput").click();
-    $(".semi_transparent").removeClass("semi_transparent");
-    $("#color_selector").hide();
+    $("#color_selector_modal").hide();
 }
 
 function applyOnAllPages() {
@@ -692,25 +727,25 @@ function initializeInputs(site, domain, enabled, background, text, ulink, vlink)
 
     if (background.value)
         if (background.mode === COLOR_MODE)
-            $(`[id='color_${site}']`).val(`#${background.value}`).attr("title", `#${background.value}`);
+            $(`[id='color_${site}']`).val(`#${background.value.substring(0,6)}`).attr("title", `#${background.value}`).attr("data-color", background.value);
         else if (background.mode === CYCLE_MODE)       
             $(`[id='color_${site}']`).val(background.value).attr("data-cycle_speed", background.value);
 
     if (text.value)
         if (text.mode === COLOR_MODE)
-            $(`[id='color_text_${site}']`).val(`#${text.value}`)
+            $(`[id='color_text_${site}']`).val(`#${text.value.substring(0,6)}`).attr("title", `#${text.value}`).attr("data-color", text.value);
         else if (text.mode === CYCLE_MODE)
             $(`[id='color_text_${site}']`).val(text.value).attr("data-cycle_speed", text.value);
 
     if (ulink.value)
         if (ulink.mode === COLOR_MODE)
-            $(`[id='color_ulink_${site}']`).val(`#${ulink.value}`)
+            $(`[id='color_ulink_${site}']`).val(`#${ulink.value.substring(0,6)}`)
         else if (ulink.mode === CYCLE_MODE)
             $(`[id='color_ulink_${site}']`).val(ulink.value).attr("data-cycle_speed", ulink.value);
 
     if (vlink.value)
         if (vlink.mode === COLOR_MODE)
-            $(`[id='color_vlink_${site}']`).val(`#${vlink.value}`)
+            $(`[id='color_vlink_${site}']`).val(`#${vlink.value.substring(0,6)}`)
         else if (vlink.mode === CYCLE_MODE)
             $(`[id='color_vlink_${site}']`).val(vlink.value).attr("data-cycle_speed", vlink.value);
 
@@ -722,10 +757,19 @@ function initializeInputs(site, domain, enabled, background, text, ulink, vlink)
     });
 
     if (site === "all") {
+        
         // Save enabled/disabled option for selected pages on switch interaction
-        $("#switch_all").bind('change', (delayFunction(enableDisableEverywhere, 1)));
+        $("#switch_all").bind('change', (delayFunction(enableDisableEverywhere, 1)))
+        // Apply focus style to label when input is focused
+        .focus(() => { $("[for='switch_all']").addClass("focus_border"); })
+        .blur(() => { $("[for='switch_all']").removeClass("focus_border"); })
         return;
     }
+
+    // Focus style on labels
+    $(`[id='enable-never_${site}']`).focus(() => { $(`[for='enable-never_${site}']`).addClass("focus_border"); }).blur(() => { $(`[for='enable-never_${site}']`).removeClass("focus_border"); })
+    $(`[id='enable-everywhere_${site}']`).focus(() => { $(`[for='enable-everywhere_${site}']`).addClass("focus_border"); }).blur(() => { $(`[for='enable-everywhere_${site}']`).removeClass("focus_border"); })
+    $(`[id='enable-custom_${site}']`).focus(() => { $(`[for='enable-custom_${site}']`).addClass("focus_border"); }).blur(() => { $(`[for='enable-custom_${site}']`).removeClass("focus_border"); })
 
     // Change enable state
     $(`[name='enable_${site}']`).change((e) => changeEnableState(e.currentTarget, site));
@@ -755,22 +799,22 @@ function modifyInputDependingOnMode (input) {
     switch (input.attr("data-mode")) {
         case COLOR_MODE:
             input.attr("type", "color").removeAttr("src").removeClass("input_extra_mode");
-            input.attr("title", input.val());
+            input.attr("title", `#${input.attr("data-color")}`);
             break;
             
         case RANDOM_MODE:
             input.attr("type", "image").attr("src", "../icons/random_2.png").addClass("input_extra_mode");
-            input.attr("title", "Random color every time page loads.");
+            input.attr("title", TRANSLATIONS.get("title_input_random"));
             break;
-    
+            
         case CYCLE_MODE:
             input.attr("type", "image").attr("src", "../icons/cycle_2.png").addClass("input_extra_mode");
-            input.attr("title", "Color cycles through RBG spectrum.");
-            break;
+            input.attr("title", TRANSLATIONS.get("title_input_cycle"));
+        break;
 
         case NOCOLOR_MODE:
             input.attr("type", "image").attr("src", "../icons/nocolor_2.png").addClass("input_extra_mode");
-            input.attr("title", "Original color");
+            input.attr("title", TRANSLATIONS.get("title_input_nocolor"));
             break;
     }
 }
@@ -883,7 +927,9 @@ function showDeleteConfirmationPopup(site_tr) {
         $("#url_delete").closest("p").hide();
     }
     
-    $("#delete_confirm").show();
+    $("#delete_modal").show();
+    $("#delete_confirm").find(".box_buttons").children().eq(1).focus();
+
 }
 
 function deleteSelectedPage() {

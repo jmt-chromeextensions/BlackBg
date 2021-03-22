@@ -1,14 +1,165 @@
 {
     "lbl_blacklist": {
-        "message": "The Blacklist"
+        "message": "Sites with custom settings"
     },
 
-    "title_add_button": {
-        "message": "Add current page to list."
+
+
+    "title_add_domain_button": {
+        "message": "Add current site's domain to list."
     },
-    "title_settings_button": {
+
+    "title_add_url_button": {
+        "message": "Add current site's complete URL to list."
+    },
+
+    "title_copy_button": {
+        "message": "Copy color or mode setting from one site to other."
+    },
+
+    "lbl_select_copy_from": {
+        "message": "Select the color or mode you want to copy."
+    },
+
+    "lbl_select_copy_to": {
+        "message": "Now select the colors/modes where you want to apply the copy."
+    },
+
+    "title_cancel_copy_button": {
+        "message": "Cancel copy."
+    },
+  
+
+
+    "lbl_domain_column": {
+        "message": "Domain"
+    },
+
+    "lbl_path_column": {
+        "message": "Path"
+    },
+
+    "lbl_enable_column": {
+        "message": "Enable"
+    },
+
+    "lbl_background_column": {
+        "message": "Backgrounds"
+    },
+
+    "lbl_text_column": {
+        "message": "Text"
+    },
+
+    "lbl_unvisited_links_column": {
+        "message": "Unvisited links"
+    },
+
+    "lbl_visited_links_column": {
+        "message": "Visited links"
+    },
+
+    "lbl_delete_column": {
+        "message": "Delete"
+    },
+
+
+
+    "lbl_enable_everywhere_info": {
+        "message": "If you enable these settings they will be applied on every website where you have not defined any other settings.."
+    },
+
+    "lbl_everywhere": {
+        "message": "Every site"
+    },
+
+    "title_enable_never": {
+        "message": "Never apply any color or mode on this site."
+    },
+
+    "title_enable_everywhere": {
+        "message": "Apply only general colors or modes (defined at the very top) on this site."
+    },
+
+    "title_enable_custom": {
+        "message": "Apply custom colors or modes, defined to the right, on this site."
+    },
+
+
+
+    "title_input_cycle": {
+        "message": "Color cycles through RBG spectrum."
+    },
+
+    "title_input_random": {
+        "message": "New random color every time the site loads."
+    },
+
+    "title_input_nocolor": {
+        "message": "Original color is not modified."
+    },
+
+    "title_delete_site": {
+        "message": "Delete this site's settings and stop applying colors or modes on it."
+    },
+
+
+
+    "lbl_popup_color_selector_choose": {
+        "message": "Choose a color or a mode for"
+    },
+
+    "lbl_popup_color_selector_all_sites": {
+        "message": "Every site"
+    },
+
+    "lbl_popup_color_selector_background": {
+        "message": "backgrounds"
+    },
+
+    "lbl_popup_color_selector_text": {
+        "message": "texts"
+    },
+
+    "lbl_popup_color_selector_ulinks": {
+        "message": "unvisited links"
+    },
+
+    "lbl_popup_color_selector_vlinks": {
+        "message": "visited links"
+    },
+
+    "lbl_popup_color_selector_optimal_cycle_speed": {
+        "message": "Optimal perfomance: 1 cycle in _SECONDS_ seconds."
+    },
+
+
+
+    "lbl_delete_confirmation_message": {
+        "message": "Are you sure you want to delete this site's settings? Original colors will be shown again."
+    },
+
+    "title_delete_confirm": {
+        "message": "Delete settings"
+    },
+
+    "title_delete_cancel": {
+        "message": "Not delete settings"
+    },
+
+
+
+
+
+
+
+
+
+
+   "title_settings_button": {
         "message": "Open settings tab."
     },
+
     "title_all_button": {
         "message": "Apply on all pages."
     },
