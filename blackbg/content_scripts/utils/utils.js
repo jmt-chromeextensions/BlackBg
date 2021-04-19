@@ -174,11 +174,26 @@ function deleteStylesheetRule(sheetSelector, selectorText, property) {
 
 }
 
+
 function setNextFocusElement(blurElement, focusElement) {
-    blurElement.blur(()=> {
-        setTimeout(() => {
-            focusElement.focus();
-        });
+    blurElement.blur((e)=> {
+        // if (lastElementFocus == blurElement)
+            setTimeout(() => {
+                console.log(blurElement);
+                console.log(focusElement);
+                focusElement.focus();
+            });
+        // lastElementFocus = blurElement;
     });
+}
+
+function setNextFocusElementList(elements) {
+
+    let length = elements.length;
+
+    for (let i = 0; i < length - 1; i++)
+        setNextFocusElement(elements[i], elements[i+1]);
+
+    setNextFocusElement(elements[length-1], elements[0]);
 }
 

@@ -118,7 +118,7 @@ tr > th:nth-child(4) {
 
 /* Colors columns */
 tr > th:nth-child(n+4) {
-  width: 65px;
+  width: 63px;
 }
 
 /* Delete column */
@@ -340,7 +340,12 @@ input[type="color"] {
   margin: 110px 0 0 150px;
 }
 
-/*customised range*/ input[type="range"].range
+/*customised range*/ 
+input[type="range"] {
+  padding: 2px;
+}
+
+input[type="range"].range
 {
   cursor: pointer;
   width: 100px !important;
@@ -355,11 +360,11 @@ input[type="color"] {
   background-image: -o-linear-gradient(right, #e6e6e6, #d2d2d2);
 }
 
-/*customised range when focusing on input */ input[type="range"].range:focus
+/*customised range when focusing on input  input[type="range"].range:focus
 {
   border: 0 !important;
   outline: none !important;
-}
+}*/
 
 /*customised range slider icon*/ input[type="range"].range::-webkit-slider-thumb
 {

@@ -325,6 +325,7 @@ function randomColorPreview(color) {
 
 function setRandomColorAsSelected_Preview () {
     siteColorPreview($(".sp-input").val());
+    $(".sp-input").focus();
 }
 
 function rgbCyclePreview() {
@@ -353,6 +354,7 @@ function cycleSpeedPreview() {
     let selection = $("input[data-palette='open']").attr("data-selection");
     
     calculateOptimalCycleRateAndSetInputTitle();
+    setTimeout(() => { $(".sp-input").val(TRANSLATIONS.get("lbl_palette_cycle")) }, 2);
     
     sendMessageToContentScripts("setCycleSpeedForPreview", site, selection, cycle_interval);
 
@@ -383,6 +385,7 @@ function visualizeSelectedMode(mode, color) {
             // Deselect other modes
             $(".mode_selected").not("#showInput").removeClass("mode_selected");
             $(".random_div").find("path").eq(0).css("fill", "white");
+            $("#save_randomColor").hide();
             $(".cycle_div").find("path").eq(0).css("fill", "white");
             $("#cycle_speed").css('visibility', 'hidden');
             $(".sp-clear-display").css("background-image", NO_COLOR_ICON)
@@ -393,6 +396,7 @@ function visualizeSelectedMode(mode, color) {
         case RANDOM_MODE:
             $(".random_div").find("path").eq(0).css("fill", "#4DDBFF");
             $(".random_div").addClass("mode_selected");
+            $("#save_randomColor").show();
             $("#showInput").spectrum("set", color);
 
             $(".mode_selected").not(".random_div").removeClass("mode_selected");
@@ -408,11 +412,12 @@ function visualizeSelectedMode(mode, color) {
             $(".cycle_div").find("path").eq(0).css("fill", "#4DDBFF");
             $(".cycle_div").addClass("mode_selected");
             $("#cycle_speed").css('visibility', 'visible');
+            setTimeout(() => { $(".sp-input").val(TRANSLATIONS.get("lbl_palette_cycle")) }, 2);
 
-            setTimeout(() => { $(".sp-input").val('') }, 2);
             $("#showInput").spectrum("set", '');
             $(".mode_selected").not(".cycle_div").removeClass("mode_selected");
             $(".random_div").find("path").eq(0).css("fill", "white");
+            $("#save_randomColor").hide();
             $(".sp-input-selected").removeClass("sp-input-selected");
             $(".sp-clear-display").css("background-image", NO_COLOR_ICON)
 
@@ -424,12 +429,13 @@ function visualizeSelectedMode(mode, color) {
         case NOCOLOR_MODE:
             $(".sp-clear-display").css("background-image", NO_COLOR_ICON_SELECTED)
             $(".sp-clear-display").addClass("mode_selected");
-            setTimeout(() => { $(".sp-input").val("Original color") }, 2);
+            setTimeout(() => { $(".sp-input").val(TRANSLATIONS.get("lbl_palette_no_color")) }, 2);
             
             $("#showInput").spectrum("set", '');
             $(".mode_selected").not(".sp-clear-display").removeClass("mode_selected");
             $(".sp-input-selected").removeClass("sp-input-selected");
             $(".random_div").find("path").eq(0).css("fill", "white");
+            $("#save_randomColor").hide();
             $(".cycle_div").find("path").eq(0).css("fill", "white");
             $("#cycle_speed").css('visibility', 'hidden');
             randomColorSelected = cycleSelected = false;

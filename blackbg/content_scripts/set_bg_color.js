@@ -18,6 +18,11 @@ const ENABLE_NEVER = "never";
 const ENABLE_ONLY_EVERYWHERE = "everywhere";
 const ENABLE_CUSTOM = "custom";
 
+const DEFAULT_BACKGROUND = { mode: COLOR_MODE, value: "000000" }
+const DEFAULT_TEXT = { mode: COLOR_MODE, value: "FFFFFF" }
+const DEFAULT_ULINK = { mode: NOCOLOR_MODE, value: "" }
+const DEFAULT_VLINK = { mode: NOCOLOR_MODE, value: "" }
+
 const HTML_ELEMENTS_EXCEPTIONS = "script, noscript, style, link, img, video";
 const HTML_VIP_ELEMENTS = 
 ".chat-author__display-name, textarea[autocomplete='twitch-chat'], .sp-thumb-inner, .r-6416eg, #progress.style-scope, .ScChannelStatusIndicator-sc-1cf6j56-0"; // Twitch chat usernames 
@@ -27,17 +32,21 @@ const HTML_VIP_ELEMENTS =
 
 var currentUrl = window.location.href;
 
-var pageEnabled = false;
 var enableState;
 var itEverywhere = false;
 var isUrl = false;
 
 var previewMode = new Map();
 
-var customBgColor_HEX = "#000000", customBgColor_RGB, customBgColor_HEX_preview;
-var customTextColor_HEX = "#FFFFFF", customTextColor_RGB, customTextColor_HEX_preview;
-var customULinkColor_HEX, customULinkColor_RGB, customULinkColor_HEX_preview;
-var customVLinkColor_HEX, customVLinkColor_RGB, customVLinkColor_HEX_preview;
+var generalSettings = { bgMode: DEFAULT_BACKGROUND.mode, bgValue: DEFAULT_BACKGROUND.value, textMode: DEFAULT_TEXT.mode, textValue: DEFAULT_TEXT.value,
+						uLinksMode: DEFAULT_ULINK.mode, uLinksValue: DEFAULT_ULINK.value, vLinksMode: DEFAULT_VLINK.mode, vLinksValue: DEFAULT_VLINK.value };
+var siteSettings = 	{ bgMode: DEFAULT_BACKGROUND.mode, bgValue: DEFAULT_BACKGROUND.value, textMode: DEFAULT_TEXT.mode, textValue: DEFAULT_TEXT.value,
+					uLinksMode: DEFAULT_ULINK.mode, uLinksValue: DEFAULT_ULINK.value, vLinksMode: DEFAULT_VLINK.mode, vLinksValue: DEFAULT_VLINK.value };
+
+var customBgColor_HEX = "#000000", customBgColor_HEX_preview;
+var customTextColor_HEX = "#FFFFFF", customTextColor_HEX_preview;
+var customULinkColor_HEX, customULinkColor_HEX_preview;
+var customVLinkColor_HEX, customVLinkColor_HEX_preview;
 
 var bgCycle_interval = false, bgCycle_interval_preview = false, bgCycle_step, bgCycle_ms, bgCycle_ms_preview;
 var textCycle_interval = false, textCycle_interval_preview = false, textCycle_step, textCycle_ms, textCycle_ms_preview;
@@ -74,6 +83,71 @@ $(document).ready(function () {
 // Inbox 📫
 chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 
+	// Apply on all pages
+	if (msg.action === "activateBlackBgMode_ALL") { // All (all) [all]
+			itEverywhere = true;
+			
+			if (enableState === ENABLE_ONLY_EVERYWHERE) {
+				initCustomBgMode();
+				setSiteSettings(generalSettings);
+			}
+		return;
+	}
+
+	if (msg.action === "deactivateBlackBgMode_ALL") { // All (all) [all]
+			itEverywhere = false;
+
+			if (enableState === ENABLE_ONLY_EVERYWHERE)
+				revertCustomBgMode();
+		return;
+	}
+
+	if (msg.action === "savePreview_ALL") {
+
+		let modeAndValue = msg.value.split("|");
+
+				switch (msg.selection) {
+					case BACKGROUND:
+						[generalSettings.bgMode, generalSettings.bgValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+
+					case TEXT:
+						[generalSettings.textMode, generalSettings.textValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+
+					case ULINK:
+						[generalSettings.uLinksMode, generalSettings.uLinksValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+
+					case VLINK:
+						[generalSettings.vLinksMode, generalSettings.vLinksValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+				}
+
+	} else if (msg.action === "savePreview") {
+
+		let modeAndValue = msg.value.split("|");
+
+				switch (msg.selection) {
+					case BACKGROUND:
+						[siteSettings.bgMode, siteSettings.bgValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+
+					case TEXT:
+						[siteSettings.textMode, siteSettings.textValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+
+					case ULINK:
+						[siteSettings.uLinksMode, siteSettings.uLinksValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+
+					case VLINK:
+						[siteSettings.vLinksMode, siteSettings.vLinksValue] = [modeAndValue[0], modeAndValue[1]];
+						break;
+				}
+
+	}
+
 	// Current color request (get random)
 	if (msg.action === "getCurrentColor") {
 
@@ -107,22 +181,6 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 	let domain = window.location.host.replace("www.", "");
 	let hrefNoOrigin = window.location.href.replace(window.location.origin, "").substring(1); // Remove first slash (/)
 
-	// Apply on all pages
-
-	if (msg.action === "applyOnAllPages") {
-		itEverywhere = true;
-		if (!pageEnabled)
-			initCustomBgMode();
-		return;
-	}
-
-	if (msg.action === "notApplyOnAllPages") {
-		itEverywhere = false;
-		if (!pageEnabled)
-			revertCustomBgMode();
-		return;
-	}
-
 	// Apply on all sites where general settings are being applied
 
 	if (msg.action.includes("_ALL") && itEverywhere && enableState === ENABLE_ONLY_EVERYWHERE) {
@@ -141,8 +199,8 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 				setCycleSpeedForPreview(msg.selection, msg.value);
 				break;
 	
-			case "noColorForPreview":
-				noColorForPreview(msg.selection);
+			case "setNoColorForPreview":
+				setNoColorForPreview(msg.selection);
 				break;
 	
 			case "savePreview":
@@ -167,26 +225,49 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 	if (isUrl && (msg.site.length < 2 && !domain.includes(msg.site[0]) || !hrefNoOrigin.includes(msg.site[1])))
 		return;
 
+	// Don't override general settings with specific site's preview settings		
+	if (msg.action.includes("Preview") && itEverywhere && enableState === ENABLE_ONLY_EVERYWHERE)
+		return;
+
 	switch(msg.action) {
 
 		case "changeState":
 			// $(".blackbg_lets_go, .blacktc_lets_go, .blackbg_link, .blackbg_pass").each(function () {
 			// 	$(this).removeClass("blackbg_lets_go").removeClass("blacktc_lets_go").removeClass("blackbg_link").removeClass("blackbg_pass");
 			// });
-			revertCustomBgMode();
-			activateCustomBgModeIfPageSelectedOrItEverywhere();
+			enableState = msg.value;
+
+			switch (enableState) {
+				case ENABLE_NEVER:
+					revertCustomBgMode();
+					break;
+			
+				case ENABLE_ONLY_EVERYWHERE:
+					if (itEverywhere) {
+						initCustomBgMode();
+						setSiteSettings(generalSettings);
+					} else 
+						revertCustomBgMode();
+					break;
+
+				case ENABLE_CUSTOM:
+					initCustomBgMode();
+					setSiteSettings(siteSettings);
+					break;
+			}
+
 			break;
 
+		// Site added
 		case "activateBlackBgMode":
-			pageEnabled = true;
-			if (!itEverywhere)
-				initCustomBgMode();
+			initCustomBgMode();
+			setSiteSettings(siteSettings);
 			break;
 
+		// Site deleted
 		case "deactivateBlackBgMode":
-			pageEnabled = false;
-			if (!itEverywhere)
-				revertCustomBgMode();
+			revertCustomBgMode(true);
+			activateCustomBgModeIfPageSelectedOrItEverywhere();
 			break;
 
 		case "setSiteColorForPreview":
@@ -201,8 +282,8 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 			setCycleSpeedForPreview(msg.selection, msg.value);
 			break;
 
-		case "noColorForPreview":
-			noColorForPreview(msg.selection);
+		case "setNoColorForPreview":
+			setNoColorForPreview(msg.selection);
 			break;
 
 		case "savePreview":
@@ -229,6 +310,13 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 		[allSites, sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] = [result.allSites, result.sitesEnabled, result.sitesBackground, result.sitesText, result.sitesULinks, result.sitesVLinks];
 
 		allSitesSettings = allSites.split(HAPPY_FACE_SEPARATOR);
+		
+		// Save general settings
+		[generalSettings.background, generalSettings.text, generalSettings.ulink, generalSettings.vlink] =
+		[allSitesSettings[1].split("/blv_ck_bg/"), allSitesSettings[2].split("/blv_ck_bg/"), allSitesSettings[3].split("/blv_ck_bg/"), allSitesSettings[4].split("/blv_ck_bg/")];
+
+		[generalSettings.bgMode, generalSettings.bgValue, generalSettings.textMode, generalSettings.textValue, generalSettings.uLinksMode, generalSettings.uLinksValue, generalSettings.vLinksMode, generalSettings.vLinksValue] =
+		[generalSettings.background[0], generalSettings.background[1], generalSettings.text[0], generalSettings.text[1], generalSettings.ulink[0], generalSettings.ulink[1], generalSettings.vlink[0], generalSettings.vlink[1]];
 
 		if (sitesEnabled) {
 
@@ -262,6 +350,10 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 			enableState = siteEnabled[1];
 			itEverywhere = allSitesSettings[0] === "enabled";
 
+			// Save site settings
+			[siteSettings.bgMode, siteSettings.bgValue, siteSettings.textMode, siteSettings.textValue, siteSettings.uLinksMode, siteSettings.uLinksValue, siteSettings.vLinksMode, siteSettings.vLinksValue] =
+			[siteBackground[1], siteBackground[2], siteText[1], siteText[2], sitesULinks[1], siteULinks[2], siteVLinks[1], siteVLinks[2]];
+
 			switch (enableState) {
 				case ENABLE_NEVER:
 					return;
@@ -269,9 +361,7 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 				case ENABLE_ONLY_EVERYWHERE:
 					if (itEverywhere) {
 						[siteBackground, siteText, siteULinks, siteVLinks] = 
-						[allSitesSettings[1].split("/blv_ck_bg/"), allSitesSettings[2].split("/blv_ck_bg/"), allSitesSettings[3].split("/blv_ck_bg/"), allSitesSettings[4].split("/blv_ck_bg/")];
-
-						pageEnabled = true;
+						[generalSettings.background, generalSettings.text, generalSettings.ulink, generalSettings.vlink];
 					}
 					else
 						return;
@@ -280,8 +370,6 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 				case ENABLE_CUSTOM:
 					[siteBackground, siteText, siteULinks, siteVLinks] = 
 					[sitesBackground[siteIndex].split("/blv_ck_bg/"), sitesText[siteIndex].split("/blv_ck_bg/"), sitesULinks[siteIndex].split("/blv_ck_bg/"), sitesVLinks[siteIndex].split("/blv_ck_bg/")];
-					
-					pageEnabled = true;
 					break;
 			}
 
@@ -312,9 +400,6 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 					break;
 				
 			}
-
-			if (customBgColor_HEX)
-				customBgColor_RGB = hexToRgb(customBgColor_HEX);
 				
 			// Text color
 			switch (textMode) {
@@ -338,9 +423,6 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 
 			}
 
-			if (customTextColor_HEX)
-				customTextColor_RGB = hexToRgb(customTextColor_HEX);
-
 			// Unvisited links color
 			switch (uLinksMode) {
 
@@ -363,9 +445,6 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 
 					
 				}
-			
-			if (customULinkColor_HEX)
-				customULinkColor_RGB = hexToRgb(customULinkColor_HEX);
 				
 			// Visited links color
 			switch (vLinksMode) {
@@ -389,10 +468,7 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 
 			}
 
-			if (customVLinkColor_HEX)
-				customVLinkColor_RGB = hexToRgb(customVLinkColor_HEX);
-
-			if (pageEnabled)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				initCustomBgMode();
 
 		}
@@ -401,114 +477,130 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 
 function setSiteSettings (siteSettings) {
 
-	let siteEnabled, siteBackground, siteText, siteULinks, siteVLinks;
+	[customBgColor_HEX, bgCycle_step, bgCycle_ms] = '';
+	[customTextColor_HEX, textCycle_step, textCycle_ms] = '';
+	[customULinkColor_HEX, ulinkCycle_step, ulinkCycle_ms] = '';
+	[customVLinkColor_HEX, vlinkCycle_step, vlinkCycle_ms] = '';
 
-	if (siteEnabled[1] === "enabled")
-				pageEnabled = true;
+	bgCycle_interval = textCycle_interval = ulinkCycle_interval = vlinkCycle_interval = false;
 
-			// Background color
-			switch (siteBackground[1]) {
-
-				case COLOR_MODE:
-					customBgColor_HEX = `#${siteBackground[2]}`
-					break;
-
-				case RANDOM_MODE:
-					customBgColor_HEX = getPaddedRandomHexColor();
-					break;
-
-				case CYCLE_MODE:
-					bgCycle_ms = siteBackground[2];
-					bgCycle_interval = true;
-					break;
-
-				case NOCOLOR_MODE:
-					customBgColor_HEX = '';
-					break;
-				
-			}
-
-			if (customBgColor_HEX)
-				customBgColor_RGB = hexToRgb(customBgColor_HEX);
-				
-			// Text color
-			switch (siteText[1]) {
-
-				case COLOR_MODE:
-					customTextColor_HEX = `#${siteText[2]}`
-					break;
-
-				case RANDOM_MODE:
-					customTextColor_HEX = getPaddedRandomHexColor();
-					break;
-
-				case CYCLE_MODE:
-					textCycle_ms = siteText[2];
-					textCycle_interval = true;
-					break;
-				
-				case NOCOLOR_MODE:
-					customTextColor_HEX = '';
-					break;
-
-			}
-
-			if (customTextColor_HEX)
-				customTextColor_RGB = hexToRgb(customTextColor_HEX);
-
-			// Unvisited links color
-			switch (siteULinks[1]) {
-
-				case COLOR_MODE:
-					customULinkColor_HEX = `#${siteULinks[2]}`
-					break;
-
-				case RANDOM_MODE:
-					customULinkColor_HEX = getPaddedRandomHexColor();
-					break;
-
-				case CYCLE_MODE:
-					ulinkCycle_ms = siteULinks[2];
-					ulinkCycle_interval = true;
-					break;
-
-				case NOCOLOR_MODE:
-					customULinkColor_HEX = '';
-					break;
-
-					
-				}
+	switch (siteSettings.bgMode) {
+		case COLOR_MODE:
+			customBgColor_HEX = siteSettings.bgValue;
+			$("html,body, .blackbg_lets_go").each(function(){
+				setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
+			});
+			break;
+	
+		case RANDOM_MODE:
+			customBgColor_HEX = getPaddedRandomHexColor();
+			$("html,body, .blackbg_lets_go").each(function(){
+				setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
+			});
+			break;
+		
+		case CYCLE_MODE:
+			customBgColor_HEX_preview = '';
+			bgCycle_interval = true;
+			bgCycle_ms_preview = siteSettings.bgValue;
 			
-			if (customULinkColor_HEX)
-				customULinkColor_RGB = hexToRgb(customULinkColor_HEX);
-				
-			// Visited links color
-			switch (siteVLinks[1]) {
+			customBgColor_HEX = "ff0000";
+			bgCycle_step = 1;
+			cycleBackground();
+			break;
+		
+		case NOCOLOR_MODE:
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
+				$("html,body, .blackbg_lets_go").each(function(){
+					removePropertyOrSetIfStored(this, "background-color");
+				});
+			break;
+	}
 
-				case COLOR_MODE:
-					customVLinkColor_HEX = `#${siteVLinks[2]}`
-					break;
+	switch (siteSettings.textMode) {
+		case COLOR_MODE:
+			customTextColor_HEX = siteSettings.textValue;
+			$("html,body, .blacktc_lets_go").each(function(){
+				setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
+			});
+			break;
+	
+		case RANDOM_MODE:
+			customTextColor_HEX = getPaddedRandomHexColor();
+			$("html,body, .blacktc_lets_go").each(function(){
+				setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
+			});
+			break;
+		
+		case CYCLE_MODE:
+			customTextColor_HEX_preview = '';
+			textCycle_interval = true;
+			textCycle_ms_preview = siteSettings.textValue;
+			
+			customTextColor_HEX = "ff0000";
+			textCycle_step = 1;
+			cycleText();
+			break;
+		
+		case NOCOLOR_MODE:
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
+				$("html,body, .blacktc_lets_go").each(function(){
+					removePropertyOrSetIfStored(this, "color");
+				});
+			break;
+	}
 
-				case RANDOM_MODE:
-					customVLinkColor_HEX = getPaddedRandomHexColor();
-					break;
+	switch (siteSettings.uLinksMode) {
+		case COLOR_MODE:
+			customULinkColor_HEX = uLinksValue;
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX, true);
+			break;
+	
+		case RANDOM_MODE:
+			customULinkColor_HEX = getPaddedRandomHexColor();
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX, true);
+			break;
+		
+		case CYCLE_MODE:
+			customULinkColor_HEX_preview = '';
+			ulinkCycle_interval = true;
+			ulinkCycle_ms_preview = siteSettings.uLinksValue;
+			
+			customULinkColor_HEX = "ff0000";
+			ulinkCycle_step = 1;
+			cycleULink();
+			break;
+		
+		case NOCOLOR_MODE:
+			deleteStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color");
+			break;
+	}
 
-				case CYCLE_MODE:
-					vlinkCycle_ms = siteVLinks[2];
-					vlinkCycle_interval = true;
-					break;
-
-				case NOCOLOR_MODE:
-					customVLinkColor_HEX = '';
-					break;
-
-			}
-
-			if (customVLinkColor_HEX)
-				customVLinkColor_RGB = hexToRgb(customVLinkColor_HEX);
-
-			if (pageEnabled || itEverywhere)
-				initCustomBgMode();
+	switch (siteSettings.vLinksMode) {
+		case COLOR_MODE:
+			customVLinkColor_HEX = vLinksValue;
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX, true);
+			break;
+	
+		case RANDOM_MODE:
+			customVLinkColor_HEX = getPaddedRandomHexColor();
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX, true);
+			break;
+		
+		case CYCLE_MODE:
+			customVLinkColor_HEX_preview = '';
+			vlinkCycle_interval = true;
+			vlinkCycle_ms_preview = siteSettings.vLinksValue;
+			
+			customVLinkColor_HEX = "ff0000";
+			vlinkCycle_step = 1;
+			cycleVLink();
+			break;
+		
+		case NOCOLOR_MODE:
+			deleteStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color");
+			break;
+	}
 
 }
 
@@ -649,7 +741,7 @@ function initCustomBgMode() {
 	// links_style = (customVLinkColor_HEX) ? links_style.replace("YYY", `.blackbg_link:visited { color: ${customVLinkColor_HEX} !important; }`) : links_style.replace("YYY", ""); 
 
 	// Elements with cycle mode activated
-	if (pageEnabled || itEverywhere)
+	if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 		initializeCycles();
 
 	// Start continuous painting process
@@ -658,7 +750,7 @@ function initCustomBgMode() {
 	// mutationObs.observe(document.body, { childList: true, attributes: true, subtree: true });
 }
 
-function revertCustomBgMode () {
+function revertCustomBgMode (hardReset) {
 
 	clearInterval(setBgColorInterval);
 	mutationObs.disconnect();
@@ -675,27 +767,28 @@ function revertCustomBgMode () {
 	$(".blackbg_lets_go").each(function () {
 		removePropertyOrSetIfStored(this, "background-color");
 		removePropertyOrSetIfStored(this, "color");
-		$(this).removeClass("blackbg_lets_go");
+		if (hardReset) $(this).removeClass("blackbg_lets_go");
 	});
 
 	$(".blacktc_lets_go").each(function () {
 		removePropertyOrSetIfStored(this, "color");
-		$(this).removeClass("blacktc_lets_go");
+		if (hardReset) $(this).removeClass("blacktc_lets_go");
 	});
 
-	$(".blackbg_link").removeClass("blackbg_link");
+	if (hardReset)  $(".blackbg_link").removeClass("blackbg_link");
 
 	$(".blackbg_pass").each(function () {
 		removePropertyOrSetIfStored(this, "color");
-		$(this).removeClass("blackbg_pass");
+		if (hardReset) $(this).removeClass("blackbg_pass");
 	});
 
+	bgCycle_interval = textCycle_interval = ulinkCycle_interval = vlinkCycle_interval = false;
 	$(`#${LINKS_STYLESHEET_ID}`).attr("media", "not all");
 
 }
 
-function setSiteColorForPreview(selection, color, cycle) {
 
+function setSiteColorForPreview(selection, color, cycle) {
 	previewMode.set(selection, COLOR_MODE);
 
 	switch (selection) {
@@ -706,9 +799,9 @@ function setSiteColorForPreview(selection, color, cycle) {
 				bgCycle_interval = false;
 			}
 
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				$("html,body, .blackbg_lets_go").each(function(){
-					setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX_preview, true)
+					setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX_preview ? customBgColor_HEX_preview : customBgColor_HEX, true)
 				});
 			break;
 
@@ -719,22 +812,22 @@ function setSiteColorForPreview(selection, color, cycle) {
 				textCycle_interval = false;
 			}
 			
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				$("html,body, .blacktc_lets_go").each(function(){
-					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX_preview, true)
+					setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX_preview ? customTextColor_HEX_preview : customTextColor_HEX, true)
 				});
 			break;
 			
 		case ULINK:
 			customULinkColor_HEX_preview = color;
 			ulinkCycle_interval = false;
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX_preview, true);
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX, true);
 			break;
 			
 		case VLINK:
 			customVLinkColor_HEX_preview = color;
 			vlinkCycle_interval = false;
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX_preview, true);
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX, true);
 			break;
 	}		
 
@@ -860,7 +953,7 @@ function stopPreview (selection) {
 		case BACKGROUND:
 
 			// Apply changes only if site is active
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				if (customBgColor_HEX)
 					$("html,body, .blackbg_lets_go").each(function(){
 						setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true)
@@ -884,7 +977,7 @@ function stopPreview (selection) {
 
 		case TEXT:
 			
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				if (customTextColor_HEX)
 					$("html,body, .blacktc_lets_go").each(function(){
 						setCssProp_storePropInDataAttributeIfExistant(this, "color", customTextColor_HEX, true)
@@ -904,7 +997,7 @@ function stopPreview (selection) {
 			break;
 			
 		case ULINK:
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				if (customULinkColor_HEX)
 					addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX, true);
 				else 
@@ -920,7 +1013,7 @@ function stopPreview (selection) {
 			break;
 
 		case VLINK:
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				if (customVLinkColor_HEX)
 					addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX, true);
 				else
@@ -998,11 +1091,11 @@ function resumeCycles() {
 
 function cycleBackground() {
 
-	if (!bgCycle_interval || (!pageEnabled && !itEverywhere))
+	if (!bgCycle_interval || enableState === ENABLE_NEVER || (!itEverywhere && enableState === ENABLE_ONLY_EVERYWHERE))
 		return;
 
-	if (!customBgColor_HEX_preview) {
-
+		
+		if (!customBgColor_HEX_preview) {
 		[bgCycle_step, customBgColor_HEX] = stepOperation(bgCycle_step, customBgColor_HEX.replace("#", ""));
 		customBgColor_HEX = toPaddedHexString(customBgColor_HEX.toString(16), 6);
 
@@ -1036,7 +1129,7 @@ function cycleBackground() {
 
 function cycleText() {
 
-	if (!textCycle_interval || (!pageEnabled && !itEverywhere))
+	if (!textCycle_interval || enableState === ENABLE_NEVER || (!itEverywhere && enableState === ENABLE_ONLY_EVERYWHERE))
 		return;
 
 	if (!customTextColor_HEX_preview) {
@@ -1074,7 +1167,7 @@ function cycleText() {
 
 function cycleULink() {
 
-	if (!ulinkCycle_interval || (!pageEnabled && !itEverywhere))
+	if (!ulinkCycle_interval || enableState === ENABLE_NEVER || (!itEverywhere && enableState === ENABLE_ONLY_EVERYWHERE))
 		return;
 
 	if (!customULinkColor_HEX_preview) {
@@ -1103,7 +1196,7 @@ function cycleULink() {
 
 function cycleVLink() {
 
-	if (!vlinkCycle_interval || (!pageEnabled && !itEverywhere))
+	if (!vlinkCycle_interval || enableState === ENABLE_NEVER || (!itEverywhere && enableState === ENABLE_ONLY_EVERYWHERE))
 		return;
 
 	if (!customVLinkColor_HEX_preview) {
@@ -1171,7 +1264,6 @@ function stepOperation (step, hex) {
             hex -= 0x000100;
             if (hex == 0xff0000) {
 				step = 1;
-				console.log("reset");
 			} 
 				
             break;
@@ -1215,14 +1307,14 @@ function setCycleSpeedForPreview(selection, interval) {
 
 //#endregion 
 
-function noColorForPreview(selection) {
+function setNoColorForPreview(selection) {
 
 	previewMode.set(selection, NOCOLOR_MODE);
 
 	switch (selection) {
 		case BACKGROUND:
 			bgCycle_interval = false;
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				$("html,body, .blackbg_lets_go").each(function(){
 					removePropertyOrSetIfStored(this, "background-color");
 				});
@@ -1230,7 +1322,7 @@ function noColorForPreview(selection) {
 
 		case TEXT:
 			textCycle_interval = false;
-			if (pageEnabled || itEverywhere)
+			if (enableState === ENABLE_CUSTOM || enableState === ENABLE_ONLY_EVERYWHERE && itEverywhere)
 				$("html,body, .blackbg_pass, .blackbg_lets_go, .blacktc_lets_go").each(function(){
 					// removePropertyOrSetIfStored(this, "color");
 					this.style.removeProperty("color");

@@ -135,6 +135,16 @@
 
 
 
+    "title_palette_confirm": {
+        "message": "Guardar cambios"
+    },
+
+    "title_palette_cancel": {
+        "message": "Descartar cambios"
+    },
+
+
+
     "lbl_delete_confirmation_message": {
         "message": "¿Estás seguro de que quieres eliminar los ajustes de este sitio? Los colores originales serán mostrados de nuevo."
     },
@@ -145,6 +155,21 @@
 
     "title_delete_cancel": {
         "message": "No eliminar ajustes"
+    },
+
+
+
+    "lbl_palette_no_color": {
+        "message": "Color original"
+    },
+    "lbl_palette_cycle": {
+        "message": "Ciclo de color"
+    },
+
+
+
+    "title_save_random": {
+        "message": "Guardar color aleatorio actual como color seleccionado."
     },
 
 

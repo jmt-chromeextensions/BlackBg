@@ -10,7 +10,6 @@ Selección de it_everywhere OK
 Añadir URL OK
 Agrupar por dominio/URL OK
 Textos de title de botones en español OK
-mapear colores por palabra
 moverse con flechas
 Opción de no tocar OK
 are you sure quitar link OK

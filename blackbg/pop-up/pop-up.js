@@ -15,7 +15,9 @@ const TRANSLATIONS = new Map([["title_enable_never", getLocalizedText("title_ena
                              ["title_input_random", getLocalizedText("title_input_random")],
                              ["title_input_cycle", getLocalizedText("title_input_cycle")],
                              ["title_input_nocolor", getLocalizedText("title_input_nocolor")],
-                             ["lbl_popup_color_selector_optimal_cycle_speed", getLocalizedText("lbl_popup_color_selector_optimal_cycle_speed")]]);
+                             ["lbl_popup_color_selector_optimal_cycle_speed", getLocalizedText("lbl_popup_color_selector_optimal_cycle_speed")],
+                             ["lbl_palette_no_color", getLocalizedText("lbl_palette_no_color")],
+                             ["lbl_palette_cycle", getLocalizedText("lbl_palette_cycle")]]);
 
 const HAPPY_FACE_SEPARATOR = " (\u273F\u25E0\u203F\u25E0\) "; // (✿◠‿◠)
 
@@ -37,7 +39,7 @@ const ENABLE_CUSTOM = "custom";
 const COLOR_MSG = "setSiteColorForPreview";
 const CYCLE_MSG = "startCycleForPreview";
 const CYCLE_SPEED_MSG = "setCycleSpeedForPreview";
-const NO_COLOR_MSG = "noColorForPreview";
+const NO_COLOR_MSG = "setNoColorForPreview";
 const ACTIVATE_MSG = "activateBlackBgMode";
 const DEACTIVATE_MSG = "deactivateBlackBgMode";
 const CHANGE_STATE_MSG = "changeState";
@@ -48,7 +50,7 @@ const NOT_APPLY_ALL_MSG = "notApplyOnAllPages";
 
 const MODE_MESSAGES = new Map([[COLOR_MODE, COLOR_MSG], [RANDOM_MODE, COLOR_MSG], [CYCLE_MODE, CYCLE_MSG], [NOCOLOR_MODE, NO_COLOR_MSG]]);
 
-const PIN_ICON = `<input style="display: none; position: relative; bottom: 29px; left: 4px;" id="save_randomColor" type="image" src="../icons/pin_2.png" title="Delete settings"></input>`;
+const PIN_ICON = `<input style="display: none; position: relative; bottom: 29px; left: 4px;" id="save_randomColor" type="image" src="../icons/pin_2.png" title="${getLocalizedText("title_save_random")}" data-tab-palette="1"></input>`;
 
 // Not used
 const SAVED_PAGE_DIV_TEMPLATE = 
@@ -111,6 +113,9 @@ var previewColorJustSet = false;
 var copyStep = 0;
 var funCounter = 0;
 
+//!!!!
+var elements;
+
 $(document).ready(function () {
 
     localizeAllTexts();
@@ -121,13 +126,12 @@ $(document).ready(function () {
         }
     });
 
+    
+
     // Add current domain or URL buttons
     $('#btn_add_domain').click(function () { addNewSelectedPage() } );
     $('#btn_add_url').click(function () { addNewSelectedPage(true) } );
 
-    // Apply on all pages button
-    $('#btn_all').change(applyOnAllPages);
-    
     // Copy buttons
     $('#btn_copy_settings').click(initSettingsCopy);
     $('#acceptBtn_copy').click(exeCopy);
@@ -199,7 +203,7 @@ $(document).ready(function () {
         }
     });
 
-    $(".sp-input").css("color", "white");
+    $(".sp-input").css("color", "white").attr("data-tab-palette", "1").attr("tabindex", "0");
 
     // Hide this thing
     $(".sp-colorize-container.sp-add-on").css("visibility", "hidden");
@@ -240,6 +244,18 @@ $(document).ready(function () {
     $(".sp-input-container").append(PIN_ICON);
     $("#save_randomColor").click(setRandomColorAsSelected_Preview);
 
+    // Define elements' focus order
+    $(".sp-clear").attr("tabindex", "0").attr("data-tab-palette", 1);
+    // setNextFocusElement($(".text_ellipsis"), $(".sp-input"));
+    // setNextFocusElement($(".sp-input"), $(".text_ellipsis"));
+    // setNextFocusElement($(".sp-input"), $(".random_div svg"));
+    // setNextFocusElement($(".sp-clear"), $(".random_div svg"));
+    // setNextFocusElement($(".random_div svg"), $("#cancelBtn"));
+    // setNextFocusElement($("#acceptBtn"), $("#cancelBtn"));
+    // setNextFocusElement($("#cancelBtn"), $(".text_ellipsis"));
+    // setNextFocusElement($("#cancelBtn_delete"), $("#acceptBtn_delete"));
+    // setNextFocusElementList([$(".text_ellipsis"), $(".sp-input"), $(".sp-clear"), $(".random_div svg"), $(".cycle_div svg"), $("#acceptBtn"), $("#cancelBtn")]);
+
 // #endregion
 
     // Delete pop-up buttons
@@ -250,7 +266,7 @@ $(document).ready(function () {
         $("#delete_modal").hide();
     })
 
-    setNextFocusElement($("#cancelBtn_delete"), $("#acceptBtn_delete"));
+    // setNextFocusElement($("#cancelBtn_delete"), $("#acceptBtn_delete"));
 
     // Hide palette when the user clicks out of it
     $("#color_selector_modal").mousedown(function(event) {
@@ -328,9 +344,91 @@ $(document).ready(function () {
 
     }, 1);
 
-    // window.onblur(function () {
-    //     closePaletteModal();
+//#region Accesibility :P
+    
+    elements = $("[data-tab-palette]");
+    elements.sort((a, b) => { 
+        if ($(a).attr("data-tab-palette") === "1")
+            return -1;
+        else if ($(b).attr("data-tab-palette") === "-1")
+            return -1;
+        else 
+            return 0;
+    });
+    var n = elements.length;
+    elements
+    .keydown(function(event){ // https://stackoverflow.com/a/3358164/9252531
+        if (event.keyCode == 9) { //if tab
+            let currentIndex = elements.index(this);
+            let newIndex = event.shiftKey ? (currentIndex - 1) % n : (currentIndex + 1) % n;
+
+            currentIndex = newIndex;
+            
+            while (!elements.eq(newIndex).is(":visible")) {
+                newIndex = event.shiftKey ? (currentIndex - 1) % n : (currentIndex + 1) % n;
+                currentIndex = newIndex;
+            }
+
+            elements.eq(newIndex).focus();
+            event.preventDefault();
+        }
+    });
+
+    elements2 = $("[data-tab-delete]");
+    var n2 = elements2.length;
+    elements2.keydown(function(event){
+        if (event.keyCode == 9) { //if tab
+            let currentIndex = elements2.index(this);
+            let newIndex = event.shiftKey ? (currentIndex - 1) % n2 : (currentIndex + 1) % n2;
+            elements2.eq(newIndex).focus();
+            event.preventDefault();
+        }
+    });
+
+    $(".sp-clear, .random_div svg, .cycle_div svg").keydown(function(event){
+        if (event.keyCode == 13) { //if tab
+            $(this).click();
+            event.preventDefault();
+        }
+    });
+
+//#endregion
+
+    // $("*").blur((e) => {
+
+    //     if (e.target == $(".text_ellipsis")[0])
+    //         if (lastElementFocus == $("#cancelBtn")[0])
+    //             setTimeout(() => {
+    //                 $(".sp-input").focus();
+    //             });
+    //         else if (lastElementFocus == $(".sp-input")[0])
+    //             setTimeout(() => {
+    //                 $("#cancelBtn").focus();
+    //             });
+                
+    //     if (e.target == $("#cancelBtn")[0] && lastElementFocus == $("#acceptBtn")[0])
+    //     setTimeout(() => {
+    //         $(".text_ellipsis").focus();
+    //     });
+        
+    //     if (e.target == $(".sp-input")[0] && lastElementFocus == $(".text_ellipsis")[0])
+    //     setTimeout(() => {
+    //         $(".random_div svg").focus();
+    //     });
+        
+    //     if (e.target == $(".random_div svg")[0] && lastElementFocus == $(".sp-input")[0])
+    //     setTimeout(() => {
+    //         $(".cycle_div svg").focus();
+    //     });
+        
+    //     if (e.target == $(".cycle_div svg")[0] && lastElementFocus == $(".random_div svg")[0])
+    //     setTimeout(() => {
+    //         $("#acceptBtn").focus();
+    //     });
+
+    //     lastElementFocus = e.target;
     // });
+            
 
 });
 
@@ -346,7 +444,7 @@ function addNewSelectedPage(isUrl) {
         if (!sitesEnabled.find(page_info => page_info.split("/blv_ck_bg/")[0] === site)) {
 
             // Default new values
-            sitesEnabled.push([site, "enabled"].join("/blv_ck_bg/"));
+            sitesEnabled.push([site, ENABLE_CUSTOM].join("/blv_ck_bg/"));
             sitesBackground.push([site, DEFAULT_BACKGROUND.mode, DEFAULT_BACKGROUND.value].join("/blv_ck_bg/"));
             sitesText.push([site, DEFAULT_TEXT.mode, DEFAULT_TEXT.value].join("/blv_ck_bg/"));
             sitesULinks.push([site, DEFAULT_ULINK.mode].join("/blv_ck_bg/"));
@@ -363,7 +461,7 @@ function addNewSelectedPage(isUrl) {
 
             chrome.storage.sync.set({
                 "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
-                function () {addSelectedPageToPopup(site, true, DEFAULT_BACKGROUND, DEFAULT_TEXT, DEFAULT_ULINK, DEFAULT_VLINK);
+                function () {addSelectedPageToPopup(site, ENABLE_CUSTOM, DEFAULT_BACKGROUND, DEFAULT_TEXT, DEFAULT_ULINK, DEFAULT_VLINK);
             })
 
         } else {
@@ -470,7 +568,7 @@ function openPaletteModal(input) {
         $("#showInput").click();
         
         // Set focus on pop-up
-        $(".text_ellipsis").focus();
+        $(".sp-input").focus();
 
         // let topDiff = parseInt($(".sp-container").css("top").replace("px", "")) - $("body")[0].scrollTop;
         // $(".sp-container").css("position", "fixed").css("top", topDiff);
@@ -482,33 +580,25 @@ function openPaletteModal(input) {
 function closePaletteModal(saveChanges) {
     notHidePalette = false;
 
-    // Adjust pop-up size
+    // Adjust pop-up's size
     if ($("body").attr("data-height")) {
         $("body").css("height", $("body").attr("data-height"));
         $("body").removeAttr("data-height");
     }
 
     // Send message to stop preview (apply changes in webpage if accept button has been pressed)
+    let value = $("input[data-palette='open']").val();
+    let mode = $("input[data-palette='open']").attr("data-mode");
     let site = $("input[data-palette='open']").attr("data-site").replaceAll("-", ".");
     let selection = $("input[data-palette='open']").attr("data-selection");
 
-    sendMessageToContentScripts(saveChanges ? SAVE_PREVIEW_MSG : STOP_PREVIEW_MSG, site, selection);
+    sendMessageToContentScripts(saveChanges ? SAVE_PREVIEW_MSG : STOP_PREVIEW_MSG, site, selection, `${mode}|${value}`);
 
     // Hide palette and modal
     cycleSelected = false;
     $("input[data-palette='open']").focus().removeAttr("data-palette");
     $("#showInput").click();
     $("#color_selector_modal").hide();
-}
-
-function applyOnAllPages() {
-    chrome.storage.sync.set({'itEverywhere': this.checked}, function() { });
-
-    if (this.checked)
-        sendMessageToContentScripts(APPLY_ALL_MSG);
-    else
-        sendMessageToContentScripts(NOT_APPLY_ALL_MSG);
-
 }
 
 function initSettingsCopy() {
@@ -644,6 +734,9 @@ function exeCopy() {
         inputTo.val(`#${value}`);
         inputTo.attr("data-mode", mode);
 
+        if (mode === COLOR_MODE) 
+            inputTo.attr("data-color", value);
+
         if (mode === CYCLE_MODE) 
             inputTo.attr("data-cycle_speed", cycleInterval);
 
@@ -739,13 +832,13 @@ function initializeInputs(site, domain, enabled, background, text, ulink, vlink)
 
     if (ulink.value)
         if (ulink.mode === COLOR_MODE)
-            $(`[id='color_ulink_${site}']`).val(`#${ulink.value.substring(0,6)}`)
+            $(`[id='color_ulink_${site}']`).val(`#${ulink.value.substring(0,6)}`).attr("title", `#${ulink.value}`).attr("data-color", ulink.value);
         else if (ulink.mode === CYCLE_MODE)
             $(`[id='color_ulink_${site}']`).val(ulink.value).attr("data-cycle_speed", ulink.value);
 
     if (vlink.value)
         if (vlink.mode === COLOR_MODE)
-            $(`[id='color_vlink_${site}']`).val(`#${vlink.value.substring(0,6)}`)
+            $(`[id='color_vlink_${site}']`).val(`#${vlink.value.substring(0,6)}`).attr("title", `#${vlink.value}`).attr("data-color", vlink.value);
         else if (vlink.mode === CYCLE_MODE)
             $(`[id='color_vlink_${site}']`).val(vlink.value).attr("data-cycle_speed", vlink.value);
 
@@ -776,7 +869,11 @@ function initializeInputs(site, domain, enabled, background, text, ulink, vlink)
 
     // Open site in new tab when URL is clicked
     $(`[id='page_${site}'] .site_domain`).click(openSiteInNewTab);
-    $(`[id='page_${site}'] .site_url`).click(openSiteInNewTab);
+    if (site.includes("||url||"))
+        $(`[id='page_${site}'] .site_url`).click(openSiteInNewTab);
+    else
+        $(`[id='page_${site}'] .site_url`).attr("tabindex", "-1");
+
 
     // Delete selected page from list (pop-up and storage; asks for confirmation)
     $(`[id='remove_${site}']`).click(function () {
@@ -821,10 +918,13 @@ function modifyInputDependingOnMode (input) {
 
 function openSiteInNewTab() {
     let url = $(this).attr('href');
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        // Open new tab with the video to the right of the current one
-        chrome.tabs.create({ url: url, active: false, index: (tabs[0].index + 1) });
-    });
+
+    if (url)
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            // Open new tab with the video to the right of the current one
+            chrome.tabs.create({ url: url, active: false, index: (tabs[0].index + 1) });
+        });
+
     return false;
 }
 
@@ -889,7 +989,7 @@ function enableDisableEverywhere() {
     allSites = [(enable ? "enabled" : "disabled"), allSitesSettings.slice(1, allSitesSettings.length).join(HAPPY_FACE_SEPARATOR)].join(HAPPY_FACE_SEPARATOR);
 
     saveSites('', true);
-    // sendMessageToContentScripts(enabled ? ACTIVATE_MSG : DEACTIVATE_MSG, site);
+    sendMessageToContentScripts(enable ? ACTIVATE_MSG : DEACTIVATE_MSG, "all");
 }
 
 function changeEnableState(input, site) {
@@ -900,7 +1000,7 @@ function changeEnableState(input, site) {
     sitesEnabled[index] = [site, state].join("/blv_ck_bg/");
 
     saveSites(ENABLED);
-    sendMessageToContentScripts(CHANGE_STATE_MSG, site);
+    sendMessageToContentScripts(CHANGE_STATE_MSG, site, '', state);
 
 }
 
@@ -960,7 +1060,7 @@ function deleteSelectedPage() {
                         $(this).find("td").eq(0).removeClass("url_saved_domain");
             });
 
-            $("#delete_confirm").hide();
+            $("#delete_modal").hide();
         }
     );
 
@@ -1011,11 +1111,11 @@ function saveSites(type, allSitesSettings) {
 
 }
 
+
 function sendMessageToContentScripts(action, site, selection, value) {
+    if (site === "all") { // Send to all open tabs (action on general settings)
 
-    if (site === "all") { // Send to all active tabs (action on general settings)
-
-        chrome.tabs.query({ active: true }, function (tabs) {
+        chrome.tabs.query({}, function (tabs) {
             for (var i = 0, length = tabs.length; i < length; i++) {
                 chrome.tabs.sendMessage(tabs[i].id, { site: site, action: action + "_ALL", selection:selection, value: value  }, function () { });
             }
@@ -1030,8 +1130,8 @@ function sendMessageToContentScripts(action, site, selection, value) {
         else
             site = site.split("||url||");
         
-        urls.push( site.length > 1 ? `http://*.${site[0]}/${site[1]}` : `http://*.${site[0]}/*` );
-        urls.push( site.length > 1 ? `https://*.${site[0]}/${site[1]}` : `https://*.${site[0]}/*` );
+        urls.push( site.length > 1 && site[1] ? `http://*.${site[0]}/${site[1]}` : `http://*.${site[0]}/*` );
+        urls.push( site.length > 1 && site[1] ? `https://*.${site[0]}/${site[1]}` : `https://*.${site[0]}/*` );
     
         chrome.tabs.query({ url: urls }, function (tabs) {
             for (var i = 0, length = tabs.length; i < length; i++) {
