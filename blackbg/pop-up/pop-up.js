@@ -32,6 +32,7 @@ const RANDOM_MODE = "random";
 const CYCLE_MODE = "cycle";
 const NOCOLOR_MODE = "nocolor";
 
+const ENABLE_UNDEFINED = "undefined";
 const ENABLE_NEVER = "never";
 const ENABLE_ONLY_EVERYWHERE = "everywhere";
 const ENABLE_CUSTOM = "custom";
