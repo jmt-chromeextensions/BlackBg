@@ -6,11 +6,11 @@
 
 
     "title_add_domain_button": {
-        "message": "Add current site's domain to list."
+        "message": "Add current site's domain to list (NICE_DOMAIN)."
     },
 
     "title_add_url_button": {
-        "message": "Add current site's complete URL to list."
+        "message": "Add current site's complete URL to list (NICE_URL)."
     },
 
     "title_copy_button": {
@@ -83,6 +83,18 @@
 
     "title_enable_custom": {
         "message": "Apply custom colors or modes, defined to the right, on this site."
+    },
+
+    "lbl_add_site_info": {
+        "message": "Click on the buttons located in the upper part, represented with a plus symbol (+), to add current site's domain (SITE_DOMAIN) or complete URL (SITE_URL) to the custom sites list."
+    },
+
+    "lbl_add_site_info_only_domain": {
+        "message": "Click on the button located in the upper part, represented with a plus symbol (+), to add current site's domain (SITE_DOMAIN) to the custom sites list."
+    },
+
+    "lbl_add_site_info_chrome": {
+        "message": "This extension is not able to customize Chrome pages (settings, extensions, new tab, etc.)."
     },
 
 

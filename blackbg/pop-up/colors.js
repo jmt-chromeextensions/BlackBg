@@ -308,7 +308,7 @@ function siteColorPreview(color) {
     let site = $("input[data-palette='open']").attr("data-site");
     let selection = $("input[data-palette='open']").attr("data-selection");
 
-    sendMessageToContentScripts("setSiteColorForPreview", site, selection, color);
+    sendMessageToContentScripts(COLOR_MSG, site, selection, color);
 
 }
 
@@ -319,7 +319,7 @@ function randomColorPreview(color) {
     let site = $("input[data-palette='open']").attr("data-site");
     let selection = $("input[data-palette='open']").attr("data-selection");
 
-    sendMessageToContentScripts("setSiteColorForPreview", site, selection, color);
+    sendMessageToContentScripts(COLOR_MSG, site, selection, color);
 
 }
 
@@ -338,7 +338,7 @@ function rgbCyclePreview() {
         let selection = $("input[data-palette='open']").attr("data-selection");
         let cycleInterval = $("#cycle_speed").val();
         
-        sendMessageToContentScripts("startCycleForPreview", site, selection, cycleInterval);
+        sendMessageToContentScripts(CYCLE_MSG, site, selection, cycleInterval);
         cycleSelected = true;
 
     }
@@ -356,7 +356,7 @@ function cycleSpeedPreview() {
     calculateOptimalCycleRateAndSetInputTitle();
     setTimeout(() => { $(".sp-input").val(TRANSLATIONS.get("lbl_palette_cycle")) }, 2);
     
-    sendMessageToContentScripts("setCycleSpeedForPreview", site, selection, cycle_interval);
+    sendMessageToContentScripts(CYCLE_MSG, site, selection, cycle_interval);
 
 }
 
@@ -367,7 +367,7 @@ function noColorPreview() {
     let site = $("input[data-palette='open']").attr("data-site");
     let selection = $("input[data-palette='open']").attr("data-selection");
     
-    sendMessageToContentScripts("noColorForPreview", site, selection);
+    sendMessageToContentScripts(NO_COLOR_MSG, site, selection);
 
 }
 

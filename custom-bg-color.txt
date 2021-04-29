@@ -13,14 +13,14 @@ Textos de title de botones en español OK
 moverse con flechas
 Opción de no tocar OK
 are you sure quitar link OK
-Cambiar guiones por otra cosa porque los dominios pueden tener guiones
+Cambiar guiones por otra cosa porque los dominios pueden tener guiones OK
 Quitar opción de cycle en content-script al borrar desde pop-up
 Tooltip de velocidad en cycle_speed OK
 Ajustar query al mandar mensajes desde pop-up OK
 Colores RGB raros (se puede transparencia con hexadecimal se añaden dos números parese) OK
 Traducir textos OK
 Investigar por qué el ciclo va muy lento al principio pero luego se activa
-Investigar caso de las barras de VOD de twitch con copyright que no se ve con NOCOLOR
+Investigar caso de las barras de VOD de twitch con copyright que no se ve con NOCOLOR OK
 tooltip en inputs para decir qué color es OK
 Cambiar descripción 
 Mensaje cuando no se ha añadido todavía ninguna página
@@ -30,5 +30,25 @@ Al añadir por URL si ya hay de host empezar con configuración de host
 En Soundcloud al pasar de una canción a otra se pone blanco el fondo OK
 keyboard-focusable
 Hacer que el pop-up de delete se oculte al pulsar fuera y oscurecer lo demás OK
+Al rato de abrir una página los mensajes no llegan
+
+
+Hacer más grande pop-up cuando se abre popuop de confirmar borrar
+No dejar meter por url si no hay url porque es falsario
+Hacer bien el scroll al añadir
+Al añadir una que ya está, poner estado custom
+
+Los links de la rejilla con http pueden ir a un sitio que no redirecciona a https
+
+Copiar con transparencia
+Al borrar no se borran todos los arrays de sites bien
+Revisar tamaño de pop-up de colores cuando hay pocas filas
+
+Cositas fallonas
+Qué ha pasado con los links del baka que están distintos en los sites
+QUÉ le pasa al copiar color a los links
+al borrar webpage (url y dominio) se sigue viendo negro
+
+
 
 #03152E

@@ -4,6 +4,10 @@ const TRANSLATIONS = new Map([["title_enable_never", getLocalizedText("title_ena
                              ["title_enable_everywhere", getLocalizedText("title_enable_everywhere")],
                              ["title_enable_custom", getLocalizedText("title_enable_custom")],
                              ["title_delete_site", getLocalizedText("title_delete_site")],
+                             ["title_add_url_button", getLocalizedText("title_add_url_button")],
+                             ["lbl_add_site_info", getLocalizedText("lbl_add_site_info")],
+                             ["lbl_add_site_info_only_domain", getLocalizedText("lbl_add_site_info_only_domain")],
+                             ["lbl_add_site_info_chrome", getLocalizedText("lbl_add_site_info_chrome")],
                              ["lbl_select_copy_to", getLocalizedText("lbl_select_copy_to")],
                              ["lbl_popup_color_selector_all_sites", getLocalizedText("lbl_popup_color_selector_all_sites")],
                              ["lbl_popup_color_selector_choose", getLocalizedText("lbl_popup_color_selector_choose")],
@@ -18,6 +22,9 @@ const TRANSLATIONS = new Map([["title_enable_never", getLocalizedText("title_ena
                              ["lbl_popup_color_selector_optimal_cycle_speed", getLocalizedText("lbl_popup_color_selector_optimal_cycle_speed")],
                              ["lbl_palette_no_color", getLocalizedText("lbl_palette_no_color")],
                              ["lbl_palette_cycle", getLocalizedText("lbl_palette_cycle")]]);
+
+const NICE_URLS = ["youtube.com/watch?v=BBSqiqqt_7E", "youtube.com/watch?v=D1syyLUGNYc", "youtube.com/watch?v=LOeL7WHFuiA", "youtube.com/watch?v=-5x5OXfe9KY"
+                  ,"youtube.com/watch?v=d6uN9xYUMxE", "youtube.com/watch?v=dQw4w9WgXcQ", "youtube.com/watch?v=hMP4ZD1rWUA", "youtube.com/watch?v=mqDOQzfM5Kc"]
 
 const HAPPY_FACE_SEPARATOR = " (\u273F\u25E0\u203F\u25E0\) "; // (✿◠‿◠)
 
@@ -127,8 +134,6 @@ $(document).ready(function () {
         }
     });
 
-    
-
     // Add current domain or URL buttons
     $('#btn_add_domain').click(function () { addNewSelectedPage() } );
     $('#btn_add_url').click(function () { addNewSelectedPage(true) } );
@@ -166,7 +171,7 @@ $(document).ready(function () {
         }
     );
 
-    // Keep showing the info message if it's visible and the user doesn't leave this row
+    // Keep showing the info message if it's visible and the user doesn't leave this row.
     $(".all_row").hover(
         () => {
             $(".all_row").addClass("tr_hover");
@@ -176,6 +181,41 @@ $(document).ready(function () {
             $(".tooltiptext").css("visibility", "hidden");
         }
     );
+
+    // Set nice URL
+    // let niceUrl = NICE_URLS[Math.floor(Math.random() *NICE_URLS.length)];
+    // $("#btn_add_url").attr("title", $("#btn_add_url").attr("title").replace("NICE_URL", niceUrl));
+
+    // Request current's site domain and URL to show them in empty list's info message and addition buttons' titles.
+    chrome.tabs.query({ active: true, currentWindow: true, 'windowId': chrome.windows.WINDOW_ID_CURRENT }, function (tabs) { 
+        let url = new URL(tabs[0].url);
+
+        let domain = url.hostname.replace("www.", "");
+        let completeUrl = url.href.replace(url.origin, "").substring(1);
+
+        if (url.href.startsWith("chrome://") || domain === "chrome.google.com") {
+            $(".add_site_info").html(TRANSLATIONS.get("lbl_add_site_info_chrome"));
+            $(".right_tools").css("margin-left", 0);
+            $(".left_tools").hide();
+            return;
+        }
+
+        if (!completeUrl) {
+            completeUrl = domain;
+
+            // Disable URL addition in this situation because it works as if it was domain addition (and it shouldn't be)
+            $("#btn_add_url").hide();
+            $(".add_site_info").html(TRANSLATIONS.get("lbl_add_site_info_only_domain"));
+        }
+        else
+            completeUrl = "..." + (completeUrl.length > 50 ? completeUrl.substring(0, 50) + "..." : completeUrl);
+
+        $("#btn_add_url").attr("title", $("#btn_add_url").attr("title").replace("NICE_URL", completeUrl));
+        $("#btn_add_domain").attr("title", $("#btn_add_domain").attr("title").replace("NICE_DOMAIN", domain));
+
+        $(".add_site_info").html($(".add_site_info").html().replace("SITE_DOMAIN", domain).replace("SITE_URL", completeUrl));
+    });
+    
 
 
 //#region Initialize color palette
@@ -261,11 +301,7 @@ $(document).ready(function () {
 
     // Delete pop-up buttons
     $("#acceptBtn_delete").click(deleteSelectedPage);
-    $("#cancelBtn_delete").click(()=> {
-        let id = $("[data-delete]").attr("id").replace("page_", "");
-        $(`[id='remove_${id}']`).focus();
-        $("#delete_modal").hide();
-    })
+    $("#cancelBtn_delete").click(closeDeletteModal);
 
     // setNextFocusElement($("#cancelBtn_delete"), $("#acceptBtn_delete"));
 
@@ -458,24 +494,34 @@ function addNewSelectedPage(isUrl) {
                 });
             });
 
+            let site2 = site; // :)
             site = { domain: site.includes("||url||") ? site.split("||url||")[0] : site, url: site.includes("||url||") ? site.split("||url||")[1] : "" };
 
             chrome.storage.sync.set({
                 "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
-                function () {addSelectedPageToPopup(site, ENABLE_CUSTOM, DEFAULT_BACKGROUND, DEFAULT_TEXT, DEFAULT_ULINK, DEFAULT_VLINK);
-            })
+                function () {
+                    addSelectedPageToPopup(site, ENABLE_CUSTOM, DEFAULT_BACKGROUND, DEFAULT_TEXT, DEFAULT_ULINK, DEFAULT_VLINK);
+                    setTimeout(() => {
+                        $(`[id='page_${site2}'] .site_domain, [id='page_${site2}'] .site_url`).removeClass("highlight_3s_blue").addClass("highlight_3s_blue");
+                        document.getElementById(`page_${site2}`).scrollIntoView();
+                    }, 5);
+            });
+            
+        sendMessageToContentScripts(ACTIVATE_MSG, site);
 
+        // Highlight the site in list, scroll to it and set its state to 'custom' if it was setted to 'never'.
         } else {
-            if (!$(`[id='switch_${site}']`).prop("checked"))
-                $(`[id='switch_${site}']`).prop("checked", true);
+
+            if ($(`[id='enable-never_${site}']`).prop("checked"))
+                $(`[id='enable-custom_${site}']`).click();
 
             $(`[id='page_${site}'] .site_domain, [id='page_${site}'] .site_url`).removeClass("highlight_3s_blue");
             setTimeout(() => {
                 $(`[id='page_${site}'] .site_domain, [id='page_${site}'] .site_url`).addClass("highlight_3s_blue");
-            });
+                document.getElementById(`page_${site}`).scrollIntoView();
+            }, 10);
         }
 
-        sendMessageToContentScripts(ACTIVATE_MSG, site);
     });
 }
 
@@ -525,7 +571,7 @@ function onColorInputClick (event, input) {
 
 function openPaletteModal(input) {
 
-    let site = $(input).attr("data-site").replaceAll("-", ".").replace("||url||", "/");
+    let site = $(input).attr("data-site").replaceAll("guionsalchichon", ".").replace("||url||", "/");
     let selection = $(input).attr("data-selection");
     let mode = $(input).attr("data-mode");
 
@@ -590,7 +636,7 @@ function closePaletteModal(saveChanges) {
     // Send message to stop preview (apply changes in webpage if accept button has been pressed)
     let value = $("input[data-palette='open']").val();
     let mode = $("input[data-palette='open']").attr("data-mode");
-    let site = $("input[data-palette='open']").attr("data-site").replaceAll("-", ".");
+    let site = $("input[data-palette='open']").attr("data-site").replaceAll("guionsalchichon", ".");
     let selection = $("input[data-palette='open']").attr("data-selection");
 
     sendMessageToContentScripts(saveChanges ? SAVE_PREVIEW_MSG : STOP_PREVIEW_MSG, site, selection, `${mode}|${value}`);
@@ -600,6 +646,19 @@ function closePaletteModal(saveChanges) {
     $("input[data-palette='open']").focus().removeAttr("data-palette");
     $("#showInput").click();
     $("#color_selector_modal").hide();
+}
+
+function closeDeletteModal() {
+    let id = $("[data-delete]").attr("id").replace("page_", "");
+    $(`[id='remove_${id}']`).focus();
+    $("#delete_modal").hide();
+
+    // Adjust pop-up's size
+    if ($("body").attr("data-height")) {
+        $("body").css("height", $("body").attr("data-height"));
+        $("body").removeAttr("data-height");
+    }
+
 }
 
 function initSettingsCopy() {
@@ -630,7 +689,8 @@ function exeCopy() {
 
     let inputFrom = $(".selected_from_copy");
 
-    let value = inputFrom.val().replace('#', '');
+    let value = inputFrom.val();
+    let valueWithTransparencyMaybeWhoKnows = inputFrom.attr("data-color").replace('#', '');
     let cycleInterval = inputFrom.attr("data-cycle_speed");
     let mode = inputFrom.attr("data-mode");
 
@@ -648,7 +708,7 @@ function exeCopy() {
     
                 switch (mode) {
                     case COLOR_MODE:
-                        sitesBackground[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        sitesBackground[index] = [site, COLOR_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
                         
                     case RANDOM_MODE:
@@ -656,7 +716,7 @@ function exeCopy() {
                         break;
     
                     case CYCLE_MODE:
-                        sitesBackground[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        sitesBackground[index] = [site, CYCLE_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
     
                     case NOCOLOR_MODE:
@@ -670,7 +730,7 @@ function exeCopy() {
     
                 switch (mode) {
                     case COLOR_MODE:
-                        sitesText[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        sitesText[index] = [site, COLOR_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
                         
                     case RANDOM_MODE:
@@ -678,7 +738,7 @@ function exeCopy() {
                         break;
     
                     case CYCLE_MODE:
-                        sitesText[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        sitesText[index] = [site, CYCLE_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
     
                     case NOCOLOR_MODE:
@@ -691,7 +751,7 @@ function exeCopy() {
     
                 switch (mode) {
                     case COLOR_MODE:
-                        sitesULinks[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        sitesULinks[index] = [site, COLOR_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
                         
                     case RANDOM_MODE:
@@ -699,7 +759,7 @@ function exeCopy() {
                         break;
     
                     case CYCLE_MODE:
-                        sitesULinks[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        sitesULinks[index] = [site, CYCLE_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
     
                     case NOCOLOR_MODE:
@@ -712,7 +772,7 @@ function exeCopy() {
     
                 switch (mode) {
                     case COLOR_MODE:
-                        sitesVLinks[index] = [site, COLOR_MODE, value].join("/blv_ck_bg/");
+                        sitesVLinks[index] = [site, COLOR_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
                         
                     case RANDOM_MODE:
@@ -720,7 +780,7 @@ function exeCopy() {
                         break;
     
                     case CYCLE_MODE:
-                        sitesVLinks[index] = [site, CYCLE_MODE, value].join("/blv_ck_bg/");
+                        sitesVLinks[index] = [site, CYCLE_MODE, valueWithTransparencyMaybeWhoKnows].join("/blv_ck_bg/");
                         break;
         
                     case NOCOLOR_MODE:
@@ -732,11 +792,11 @@ function exeCopy() {
         }
 
         // Set input's data or icon
-        inputTo.val(`#${value}`);
+        inputTo.val(value.startsWith("#") ? value : `#${value}`);
         inputTo.attr("data-mode", mode);
 
         if (mode === COLOR_MODE) 
-            inputTo.attr("data-color", value);
+            inputTo.attr("data-color", valueWithTransparencyMaybeWhoKnows);
 
         if (mode === CYCLE_MODE) 
             inputTo.attr("data-cycle_speed", cycleInterval);
@@ -747,8 +807,8 @@ function exeCopy() {
             value = getPaddedRandomHexColor();
         
         // Could be unified in only one message
-        sendMessageToContentScripts(MODE_MESSAGES.get(mode), site, selection, value);
-        sendMessageToContentScripts(SAVE_PREVIEW_MSG, site, selection);
+        sendMessageToContentScripts(MODE_MESSAGES.get(mode), site, selection, valueWithTransparencyMaybeWhoKnows);
+        sendMessageToContentScripts(SAVE_PREVIEW_MSG, site, selection, valueWithTransparencyMaybeWhoKnows);
 
     });
 
@@ -771,16 +831,21 @@ function addSelectedPageToPopup(site, enabled, background, text, ulink, vlink) {
 
     site = `${site.domain}${isUrl ? `||url||${site.url}` : ""}`;
 
-    let position_in_list = sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes (site.replace("www.", ""))));
     site = site.replace("www.", "");
+    let position_in_list = sitesEnabled.indexOf(sitesEnabled.find(page_info => page_info.includes (site)));
 
     if (position_in_list == 0)
         $("#saved_sites").append(new_saved_page_elem_html);
     else
         $(".saved_page").eq(position_in_list - 1 + 1).after(new_saved_page_elem_html); // Skip all sites' row
 
+    // Links to site (second and third columns) This is already in initializeInputs
+    // $(`[id='page_${site}'] .site_domain`).click(openSiteInNewTab);
+    // $(`[id='page_${site}'] .site_url`).click(openSiteInNewTab);
         
-    initializeInputs(site, domain, enabled, background, text, ulink, vlink)
+    initializeInputs(site, domain, enabled, background, text, ulink, vlink);
+
+    $(".add_site_info").hide();
     
 }
 
@@ -917,7 +982,9 @@ function modifyInputDependingOnMode (input) {
     }
 }
 
-function openSiteInNewTab() {
+function openSiteInNewTab(e) {
+    e.preventDefault();
+
     let url = $(this).attr('href');
 
     if (url)
@@ -1013,6 +1080,13 @@ function showDeleteConfirmationPopup(site_tr) {
     // Indicate which color is being selected
     $("[data-delete]").removeAttr("data-delete");
     $(site_tr).attr("data-delete", "open");
+
+    // Increase body's height so the modal can fit in
+    let current_body_height = parseFloat($("body").css("height").replace("px", ""));
+    if (current_body_height < 380) {
+        $("body").attr("data-height", current_body_height);
+        $("body").css("height", 380);
+    }
     
     // Show selected page's info in pop-up
     $("#domain_delete").html(domain);
@@ -1035,8 +1109,8 @@ function showDeleteConfirmationPopup(site_tr) {
 
 function deleteSelectedPage() {
     
-    let domain = $("[data-delete]").attr("data-domain").replaceAll("-", ".");
-    let url = $("[data-delete]").attr("data-url").replaceAll("-", ".");
+    let domain = $("[data-delete]").attr("data-domain").replaceAll("guionsalchichon", ".");
+    let url = $("[data-delete]").attr("data-url").replaceAll("guionsalchichon", ".");
 
     let site = domain + (url ? `||url||${url}` : "");
 
@@ -1045,6 +1119,16 @@ function deleteSelectedPage() {
     sitesText = sitesText.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
     sitesULinks = sitesULinks.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
     sitesVLinks = sitesVLinks.filter(page_info => page_info.split("/blv_ck_bg/")[0] !== site);
+
+    // Adjust pop-up's size
+    if ($("body").attr("data-height")) {
+        $("body").css("height", $("body").attr("data-height"));
+        $("body").removeAttr("data-height");
+    }
+
+    if (sitesEnabled.length == 0) 
+        $(".add_site_info").show();
+    $("#delete_modal").hide();
 
     chrome.storage.sync.set({
         "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
@@ -1060,8 +1144,6 @@ function deleteSelectedPage() {
                     else
                         $(this).find("td").eq(0).removeClass("url_saved_domain");
             });
-
-            $("#delete_modal").hide();
         }
     );
 

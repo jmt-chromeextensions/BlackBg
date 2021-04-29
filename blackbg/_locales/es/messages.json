@@ -6,11 +6,11 @@
 
 
     "title_add_domain_button": {
-        "message": "Añadir dominio del sitio actual a la lista."
+        "message": "Añadir dominio del sitio actual a la lista (NICE_DOMAIN)."
     },
 
     "title_add_url_button": {
-        "message": "Añadir URL completa del sitio actual a la lista."
+        "message": "Añadir URL completa del sitio actual a la lista (NICE_URL)."
     },
     
     "title_copy_button": {
@@ -85,6 +85,18 @@
         "message": "Aplicar colores o modos personalizados, definidos a la derecha, en este sitio."
     },
 
+    "lbl_add_site_info": {
+        "message": "Pulsa sobre los botones situados en la parte superior, representados con un símbolo de más (+), para añadir el dominio del sitio actual (SITE_DOMAIN) o la URL completa (SITE_URL) a la lista de sitios personalizados."
+    },
+
+    "lbl_add_site_info_only_domain": {
+        "message": "Pulsa sobre el botón situado en la parte superior, representado con un símbolo de más (+), para añadir el dominio del sitio actual (SITE_DOMAIN) a la lista de sitios personalizados."
+    },
+
+    "lbl_add_site_info_chrome": {
+        "message": "Esta extensión no es capaz de personalizar las páginas de Chrome (configuración, extensiones, nueva pestaña, etc.)."
+    },
+
 
 
     "title_input_cycle": {
@@ -106,7 +118,7 @@
 
 
     "lbl_popup_color_selector_choose": {
-        "message": "Selecciona un color o un modo para los"
+        "message": "Escoge un color o un modo para los"
     },
 
     "lbl_popup_color_selector_all_sites": {

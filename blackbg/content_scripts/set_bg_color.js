@@ -179,9 +179,6 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 		return;
 	}
 
-	let domain = window.location.host.replace("www.", "");
-	let hrefNoOrigin = window.location.href.replace(window.location.origin, "").substring(1); // Remove first slash (/)
-
 	// Apply on all sites where general settings are being applied
 
 	if (msg.action.includes("_ALL") && itEverywhere && (enableState === ENABLE_ONLY_EVERYWHERE || enableState === ENABLE_UNDEFINED)) {
@@ -218,12 +215,14 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 
 	}
 
-	// Apply on specific site
+	let domain = window.location.host.replace("www.", "");
+	let hrefNoOrigin = window.location.href.replace(window.location.origin, "").substring(1); // Remove first slash (/)
 
-	if (!isUrl == 1 && !domain.includes(msg.site[0])) // Watch out
+	// Apply on specific site (stop applying changes if they don't belong to this site)
+	if (!isUrl && !domain.includes(msg.site[0])) // Watch out
 		return;
 
-	if (isUrl && (msg.site.length < 2 && !domain.includes(msg.site[0]) || !hrefNoOrigin.includes(msg.site[1])))
+	if (isUrl && (msg.site.length == 2 && msg.site[1] && !domain.includes(msg.site[0]) || !hrefNoOrigin.includes(msg.site[1])))
 		return;
 
 	// Don't override general settings with specific site's preview settings		
@@ -261,8 +260,25 @@ chrome.extension.onMessage.addListener(function (msg, sender, sendResponse) {
 
 		// Site added
 		case "activateBlackBgMode":
-			initCustomBgMode();
-			setSiteSettings(siteSettings);
+
+			// New domain/URL
+			if (enableState === ENABLE_UNDEFINED)
+				activateCustomBgModeIfPageSelectedOrItEverywhere();
+			else {
+
+				// URL added
+				if (msg.site.length == 2 && msg.site[1]) {
+					revertCustomBgMode(true);
+					activateCustomBgModeIfPageSelectedOrItEverywhere();
+				} 
+				// Domain added (URL has priority so we dont' do anything)
+				else  {
+
+				}
+
+			}
+
+			enableState = ENABLE_CUSTOM;
 			break;
 
 		// Site deleted
@@ -319,6 +335,8 @@ function activateCustomBgModeIfPageSelectedOrItEverywhere() {
 
 		[generalSettings.bgMode, generalSettings.bgValue, generalSettings.textMode, generalSettings.textValue, generalSettings.uLinksMode, generalSettings.uLinksValue, generalSettings.vLinksMode, generalSettings.vLinksValue] =
 		[generalSettings.background[0], generalSettings.background[1], generalSettings.text[0], generalSettings.text[1], generalSettings.ulink[0], generalSettings.ulink[1], generalSettings.vlink[0], generalSettings.vlink[1]];
+
+		isUrl = false;
 
 		if (sitesEnabled) {
 
@@ -624,7 +642,10 @@ function setEverythingColorExceptElementsWithTransparentBackground() {
 			// Add class to mark the elements whose backgrounds have already been set to black
 			$(this).addClass("blackbg_lets_go");
 
-		} else if ($(this).is("header.css-1dbjc4n") || $(this).is("main.css-1dbjc4n")) { // Twitter...
+		} else if ($(this).is("header.css-1dbjc4n") || $(this).is("main.css-1dbjc4n") // Twitter...
+		 || $(this).is("div.l-container.l-content") // Soundcloud...
+		 || $(this).is("._1vyLCp-v-tE5QvZovwrASa") || $(this).is("._3ozFtOe6WpJEMUtxDOIvtU") || $(this).is("._1npCwF50X2J7Wt82SZi6J0")) // Reddit... (I guess all this will stop working in 4 hours)
+		{ 
 			setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true);
 			$(this).addClass("blackbg_lets_go");
 		}
@@ -718,8 +739,8 @@ function removePropertyOrSetIfStored (elem, prop) {
 	}
 }
 
-function initCustomBgMode() {
 
+function initCustomBgMode() {
 	// Page background
 	$("html, body").each(function () {
 		setCssProp_storePropInDataAttributeIfExistant(this, "background-color", customBgColor_HEX, true);
@@ -832,13 +853,21 @@ function setSiteColorForPreview(selection, color, cycle) {
 		case ULINK:
 			customULinkColor_HEX_preview = color;
 			ulinkCycle_interval = false;
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX, true);
+
+			let color_color_color2 = customULinkColor_HEX_preview ? customULinkColor_HEX_preview : customULinkColor_HEX;
+			color_color_color2 = color_color_color2.startsWith("#") ? color_color_color2 : `#${color_color_color2}`
+
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:not(:visited), .blackbg_link:not(:visited) *", "color", color_color_color2, true);
 			break;
 			
 		case VLINK:
 			customVLinkColor_HEX_preview = color;
+
+			let color_color_color3 = customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX;
+			color_color_color3 = color_color_color3.startsWith("#") ? color_color_color3 : `#${color_color_color3}`
+
 			vlinkCycle_interval = false;
-			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", customVLinkColor_HEX_preview ? customVLinkColor_HEX_preview : customVLinkColor_HEX, true);
+			addOrUpdateStylesheetRule(`#${LINKS_STYLESHEET_ID}`, ".blackbg_link:visited, .blackbg_link:visited *", "color", color_color_color3, true);
 			break;
 	}		
 
@@ -1056,6 +1085,7 @@ function initializeCycles() {
 	}
 
 	if (textCycle_ms) {
+		customTextColor_HEX = "ff0000";
 		textCycle_step = 1;
 		cycleText();
 	}

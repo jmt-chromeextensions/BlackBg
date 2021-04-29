@@ -1,0 +1,131 @@
+[sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] =
+[[],
+[],
+[],
+[],
+[]]
+
+[sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] =
+[
+    [
+        [
+            "google.com||url||search?q=rgrg&oq=rgrg&aqs=chrome..69i57j69i59j69i60l2j69i65j69i60l3.471j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/custom"
+        ],
+        [
+            "google.com||url||search?q=rgrg&oq=rgrg&aqs=chrome..69i57j69i59j69i60l2j69i65j69i60l3.471j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/000000"
+        ],
+        [
+            "google.com||url||search?q=rgrg&oq=rgrg&aqs=chrome..69i57j69i59j69i60l2j69i65j69i60l3.471j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/FFFFFF"
+        ],
+        [
+            "google.com||url||search?q=rgrg&oq=rgrg&aqs=chrome..69i57j69i59j69i60l2j69i65j69i60l3.471j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/nocolor"
+        ],
+        [
+            "google.com||url||search?q=rgrg&oq=rgrg&aqs=chrome..69i57j69i59j69i60l2j69i65j69i60l3.471j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/nocolor"
+        ]
+    ]
+]
+
+[sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] =
+[["api.jquery.com||url||hide//blv_ck_bg/never", "geeksforgeeks.org/blv_ck_bg/custom", "google.com/blv_ck_bg/everywhere", "google.com||url||search?q=fbnhtrh&oq=fbnhtrh&aqs=c%687j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/custom", "pinterest.es/blv_ck_bg/never", "stackoverflow.com/blv_ck_bg/never", "twitch.tv/blv_ck_bg/never", "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/custom", "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/custom", "youtube.com||url||watch?v=58DLxV8BiHo&ab_channel=noname/blv_ck_bg/custom", "youtube.com||url||watch?v=5QV31OhlIAo&ab_channel=HearingAids/blv_ck_bg/custom"],
+["api.jquery.com||url||hide//blv_ck_bg/color/blv_ck_bg/000000", "geeksforgeeks.org/blv_ck_bg/color/blv_ck_bg/000000", "google.com/blv_ck_bg/color/blv_ck_bg/000000", "google.com||url||search?q=fbnhtrh&oq=fbnhtrh&aqs=c%=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/5cbb47", "pinterest.es/blv_ck_bg/color/blv_ck_bg/000000", "stackoverflow.com/blv_ck_bg/color/blv_ck_bg/1a1545", "twitch.tv/blv_ck_bg/nocolor", "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/nocolor", "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDs%8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/a7f3f17c", "youtube.com||url||watch?v=58DLxV8BiHo&ab_channel=noname/blv_ck_bg/color/blv_ck_bg/e8c1ea", "youtube.com||url||watch?v=5QV31OhlIAo&ab_channel=HearingAids/blv_ck_bg/color/blv_ck_bg/000000"],
+["api.jquery.com||url||hide//blv_ck_bg/color/blv_ck_bg/FFFFFF", "geeksforgeeks.org/blv_ck_bg/color/blv_ck_bg/FFFFFF", "google.com/blv_ck_bg/color/blv_ck_bg/FFFFFF", "google.com||url||search?q=fbnhtrh&oq=fbnhtrh&aqs=c%=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/FFFFFF", "pinterest.es/blv_ck_bg/color/blv_ck_bg/000000", "stackoverflow.com/blv_ck_bg/color/blv_ck_bg/362c2c", "twitch.tv/blv_ck_bg/nocolor", "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/nocolor", "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/000000", "youtube.com||url||watch?v=58DLxV8BiHo&ab_channel=noname/blv_ck_bg/color/blv_ck_bg/000000", "youtube.com||url||watch?v=5QV31OhlIAo&ab_channel=HearingAids/blv_ck_bg/color/blv_ck_bg/f50fe2"],
+["api.jquery.com||url||hide//blv_ck_bg/color/blv_ck_bg/6eeecb", "geeksforgeeks.org/blv_ck_bg/nocolor", "google.com/blv_ck_bg/nocolor", "google.com||url||search?q=fbnhtrh&oq=fbnhtrh&aqs=c%87j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/nocolor", "pinterest.es/blv_ck_bg/color/blv_ck_bg/000000", "stackoverflow.com/blv_ck_bg/nocolor", "twitch.tv/blv_ck_bg/nocolor", "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/nocolor", "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/c12626", "youtube.com||url||watch?v=58DLxV8BiHo&ab_channel=noname/blv_ck_bg/color/blv_ck_bg/000000", "youtube.com||url||watch?v=5QV31OhlIAo&ab_channel=HearingAids/blv_ck_bg/color/blv_ck_bg/e731d8"],
+["api.jquery.com||url||hide//blv_ck_bg/nocolor", "geeksforgeeks.org/blv_ck_bg/nocolor", "google.com/blv_ck_bg/nocolor", "google.com||url||search?q=fbnhtrh&oq=fbnhtrh&aqs=c%87j0j7&sourceid=chrome&ie=UTF-8/blv_ck_bg/nocolor", "pinterest.es/blv_ck_bg/color/blv_ck_bg/000000", "stackoverflow.com/blv_ck_bg/nocolor", "twitch.tv/blv_ck_bg/nocolor", "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/nocolor", "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/d32121", "youtube.com||url||watch?v=58DLxV8BiHo&ab_channel=noname/blv_ck_bg/color/blv_ck_bg/000000", "youtube.com||url||watch?v=5QV31OhlIAo&ab_channel=HearingAids/blv_ck_bg/cycle/blv_ck_bg/1"]]
+
+
+[sitesEnabled, sitesBackground, sitesText, sitesULinks, sitesVLinks] =
+[
+    [
+        "filmaffinity.com/blv_ck_bg/custom",
+        "google.com/blv_ck_bg/never",
+        "google.com||url||search?q=a&oq=a&aqs=chrome..69i57%85623j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/custom",
+        "google.com||url||search?q=b&oq=b&aqs=chrome..69i57j69i60j69i61l2j69i60l2j69i65l2.543j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/custom",
+        "google.com||url||search?q=barbie&safe=active&sxsrf=ALeKk02lVyHPstujMB35Zj9bgmiZlZq7Zg%3A1619640410716&ei=WsCJYMOcK8mT8gL034OQDg&oq=barbie&gs_lcp=Cgdnd3Mtd2l6EAMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAguEEMyBAguEEMyBAgAEEMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAgAEEM6BwgjELADECc6BwgAELADEEM6EQgAELEDEIMBEMcBEKMCELADOg4ILhCxAxCDARCwAxDIAzoKCC4QsAMQyAMQQzoHCCMQ6gIQJzoJCCMQ6gIQJxATOgQIIxAnOgoIABDHARCjAhBDOgYIIxAnEBM6CggAEMcBEK8BEENKBQg4EgExULGVAVjwnQFg6J4BaAJwAHgAgAGBAYgBigWSAQMxLjWYAQCgAQGqAQdnd3Mtd2l6sAEKyAELwAEB&sclient=gws-wiz&ved=0ahUKEwjDseDa3qHwAhXJiVwKHfTvAOIQ4dUDCA4&uact=5/blv_ck_bg/custom",
+        "google.com||url||search?q=c&oq=c&aqs=chrome..69i57j69i60l5j69i65l2.863j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/custom",
+        "khworld.org/blv_ck_bg/custom",
+        "linkedin.com/blv_ck_bg/custom",
+        "siempreatletico.com/blv_ck_bg/custom",
+        "twitch.tv/blv_ck_bg/custom",
+        "twitter.com||url||_javimt/likes/blv_ck_bg/custom",
+        "york.ac.uk/blv_ck_bg/custom",
+        "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/custom",
+        "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/custom",
+        "youtube.com||url||watch?v=ogE-mtpM6jA&ab_channel=InTheWoods&loop=0/blv_ck_bg/custom"
+    ],
+    [
+        "filmaffinity.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=a&oq=a&aqs=chrome..69i57%85623j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=b&oq=b&aqs=chrome..69i57j69i60j69i61l2j69i60l2j69i65l2.543j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/af71c73d",
+        "google.com||url||search?q=barbie&safe=active&sxsrf=ALeKk02lVyHPstujMB35Zj9bgmiZlZq7Zg%3A1619640410716&ei=WsCJYMOcK8mT8gL034OQDg&oq=barbie&gs_lcp=Cgdnd3Mtd2l6EAMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAguEEMyBAguEEMyBAgAEEMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAgAEEM6BwgjELADECc6BwgAELADEEM6EQgAELEDEIMBEMcBEKMCELADOg4ILhCxAxCDARCwAxDIAzoKCC4QsAMQyAMQQzoHCCMQ6gIQJzoJCCMQ6gIQJxATOgQIIxAnOgoIABDHARCjAhBDOgYIIxAnEBM6CggAEMcBEK8BEENKBQg4EgExULGVAVjwnQFg6J4BaAJwAHgAgAGBAYgBigWSAQMxLjWYAQCgAQGqAQdnd3Mtd2l6sAEKyAELwAEB&sclient=gws-wiz&ved=0ahUKEwjDseDa3qHwAhXJiVwKHfTvAOIQ4dUDCA4&uact=5/blv_ck_bg/color/blv_ck_bg/af71c73d",
+        "google.com||url||search?q=c&oq=c&aqs=chrome..69i57j69i60l5j69i65l2.863j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "khworld.org/blv_ck_bg/color/blv_ck_bg/000000",
+        "linkedin.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "siempreatletico.com/blv_ck_bg/color/blv_ck_bg/000000",
+        "twitch.tv/blv_ck_bg/color/blv_ck_bg/8d94f03d",
+        "twitter.com||url||_javimt/likes/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "york.ac.uk/blv_ck_bg/color/blv_ck_bg/000000",
+        "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/color/blv_ck_bg/475a597c",
+        "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDs%8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/a7f3f17c",
+        "youtube.com||url||watch?v=ogE-mtpM6jA&ab_channel=InTheWoods&loop=0/blv_ck_bg/color/blv_ck_bg/000000"
+    ],
+    [
+        "filmaffinity.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=a&oq=a&aqs=chrome..69i57%85623j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=b&oq=b&aqs=chrome..69i57j69i60j69i61l2j69i60l2j69i65l2.543j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/000000",
+        "google.com||url||search?q=barbie&safe=active&sxsrf=ALeKk02lVyHPstujMB35Zj9bgmiZlZq7Zg%3A1619640410716&ei=WsCJYMOcK8mT8gL034OQDg&oq=barbie&gs_lcp=Cgdnd3Mtd2l6EAMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAguEEMyBAguEEMyBAgAEEMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAgAEEM6BwgjELADECc6BwgAELADEEM6EQgAELEDEIMBEMcBEKMCELADOg4ILhCxAxCDARCwAxDIAzoKCC4QsAMQyAMQQzoHCCMQ6gIQJzoJCCMQ6gIQJxATOgQIIxAnOgoIABDHARCjAhBDOgYIIxAnEBM6CggAEMcBEK8BEENKBQg4EgExULGVAVjwnQFg6J4BaAJwAHgAgAGBAYgBigWSAQMxLjWYAQCgAQGqAQdnd3Mtd2l6sAEKyAELwAEB&sclient=gws-wiz&ved=0ahUKEwjDseDa3qHwAhXJiVwKHfTvAOIQ4dUDCA4&uact=5/blv_ck_bg/cycle/blv_ck_bg/1",
+        "google.com||url||search?q=c&oq=c&aqs=chrome..69i57j69i60l5j69i65l2.863j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/ffffff",
+        "khworld.org/blv_ck_bg/color/blv_ck_bg/FFFFFF",
+        "linkedin.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "siempreatletico.com/blv_ck_bg/color/blv_ck_bg/FFFFFF",
+        "twitch.tv/blv_ck_bg/color/blv_ck_bg/ffffff",
+        "twitter.com||url||_javimt/likes/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "york.ac.uk/blv_ck_bg/color/blv_ck_bg/FFFFFF",
+        "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/color/blv_ck_bg/462222",
+        "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/000000",
+        "youtube.com||url||watch?v=ogE-mtpM6jA&ab_channel=InTheWoods&loop=0/blv_ck_bg/color/blv_ck_bg/000000"
+    ],
+    [
+        "filmaffinity.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=a&oq=a&aqs=chrome..69i57%85623j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=b&oq=b&aqs=chrome..69i57j69i60j69i61l2j69i60l2j69i65l2.543j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/000000",
+        "google.com||url||search?q=barbie&safe=active&sxsrf=ALeKk02lVyHPstujMB35Zj9bgmiZlZq7Zg%3A1619640410716&ei=WsCJYMOcK8mT8gL034OQDg&oq=barbie&gs_lcp=Cgdnd3Mtd2l6EAMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAguEEMyBAguEEMyBAgAEEMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAgAEEM6BwgjELADECc6BwgAELADEEM6EQgAELEDEIMBEMcBEKMCELADOg4ILhCxAxCDARCwAxDIAzoKCC4QsAMQyAMQQzoHCCMQ6gIQJzoJCCMQ6gIQJxATOgQIIxAnOgoIABDHARCjAhBDOgYIIxAnEBM6CggAEMcBEK8BEENKBQg4EgExULGVAVjwnQFg6J4BaAJwAHgAgAGBAYgBigWSAQMxLjWYAQCgAQGqAQdnd3Mtd2l6sAEKyAELwAEB&sclient=gws-wiz&ved=0ahUKEwjDseDa3qHwAhXJiVwKHfTvAOIQ4dUDCA4&uact=5/blv_ck_bg/color/blv_ck_bg/ffffff",
+        "google.com||url||search?q=c&oq=c&aqs=chrome..69i57j69i60l5j69i65l2.863j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/ffffff",
+        "khworld.org/blv_ck_bg/nocolor",
+        "linkedin.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "siempreatletico.com/blv_ck_bg/nocolor",
+        "twitch.tv/blv_ck_bg/color/blv_ck_bg/ffffff",
+        "twitter.com||url||_javimt/likes/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "york.ac.uk/blv_ck_bg/nocolor",
+        "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/cycle/blv_ck_bg/1",
+        "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/c12626",
+        "youtube.com||url||watch?v=ogE-mtpM6jA&ab_channel=InTheWoods&loop=0/blv_ck_bg/color/blv_ck_bg/000000"
+    ],
+    [
+        "filmaffinity.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=a&oq=a&aqs=chrome..69i57%85623j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=b&oq=b&aqs=chrome..69i57j69i60j69i61l2j69i60l2j69i65l2.543j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "google.com||url||search?q=barbie&safe=active&sxsrf=ALeKk02lVyHPstujMB35Zj9bgmiZlZq7Zg%3A1619640410716&ei=WsCJYMOcK8mT8gL034OQDg&oq=barbie&gs_lcp=Cgdnd3Mtd2l6EAMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAguEEMyBAguEEMyBAgAEEMyBwgAELEDEEMyBAgAEEMyBAgAEEMyBAgAEEM6BwgjELADECc6BwgAELADEEM6EQgAELEDEIMBEMcBEKMCELADOg4ILhCxAxCDARCwAxDIAzoKCC4QsAMQyAMQQzoHCCMQ6gIQJzoJCCMQ6gIQJxATOgQIIxAnOgoIABDHARCjAhBDOgYIIxAnEBM6CggAEMcBEK8BEENKBQg4EgExULGVAVjwnQFg6J4BaAJwAHgAgAGBAYgBigWSAQMxLjWYAQCgAQGqAQdnd3Mtd2l6sAEKyAELwAEB&sclient=gws-wiz&ved=0ahUKEwjDseDa3qHwAhXJiVwKHfTvAOIQ4dUDCA4&uact=5/blv_ck_bg/color/blv_ck_bg/af71c73d",
+        "google.com||url||search?q=c&oq=c&aqs=chrome..69i57j69i60l5j69i65l2.863j0j4&sourceid=chrome&ie=UTF-8/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "khworld.org/blv_ck_bg/nocolor",
+        "linkedin.com/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "siempreatletico.com/blv_ck_bg/nocolor",
+        "twitch.tv/blv_ck_bg/color/blv_ck_bg/af71c73d",
+        "twitter.com||url||_javimt/likes/blv_ck_bg/color/blv_ck_bg/0000003d",
+        "york.ac.uk/blv_ck_bg/nocolor",
+        "york.ac.uk||url||teaching/cws/wws/webpage1.html/blv_ck_bg/cycle/blv_ck_bg/1",
+        "youtube.com||url||playlist?list=PLM2gJ5-rPtp1WCnDsFo8nIcg6H9QUjImh/blv_ck_bg/color/blv_ck_bg/d32121",
+        "youtube.com||url||watch?v=ogE-mtpM6jA&ab_channel=InTheWoods&loop=0/blv_ck_bg/color/blv_ck_bg/000000"
+    ]
+]
+
+
+
+chrome.storage.sync.set({
+            "sitesEnabled": sitesEnabled, "sitesBackground": sitesBackground, "sitesText": sitesText, "sitesULinks": sitesULinks, "sitesVLinks": sitesVLinks },
+            function () { console.log();
+        });

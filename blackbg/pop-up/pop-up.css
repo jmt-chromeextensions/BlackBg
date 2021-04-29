@@ -143,7 +143,13 @@ tr > th:nth-child(8) {
 
 .all_row_extended {
   padding-bottom: 45px !important;
-}  
+} 
+
+.add_site_info {
+  max-width: 500px;
+  margin: 1.5rem 0 1rem 8rem;
+  font-size: medium;
+}
 
 /* Highlight hovered row's URL and domain */
 tbody > tr:hover, tbody > tr:hover > * > a {
@@ -252,11 +258,11 @@ input[type="color"] {
 }
 
 .modal_delete_domainAndUrl {
-  height: 37% !important;
+  height: 227px !important;
 }
 
 .modal_delete_onlyDomain {
-  height: 30% !important;
+  height: 170px !important;
 }
 
 .modal_delete > * p, .modal_delete > p {
@@ -565,15 +571,15 @@ input:checked + .slider:before {
 @keyframes myfirst
 {
     0%      {color:white;}
-    25%     {color:#4DDBFF;}
-    75%     {color:#4DDBFF;}
+    25%     {color:#3066ca;}
+    75%     {color:#3066ca;}
     100%    {color:white;}
 }
 
 @-webkit-keyframes myfirst /* Safari and Chrome */
 {
     0%      {color:white;}
-    25%     {color:#4DDBFF;}
-    75%     {color:#4DDBFF;}
+    25%     {color:#3066ca;}
+    75%     {color:#3066ca;}
     100%    {color:white;}
 }
